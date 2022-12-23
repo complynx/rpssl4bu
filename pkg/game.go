@@ -24,7 +24,7 @@ type Choice struct {
 
 // RandomProvider is an interface that represents a provider of random numbers.
 type RandomProvider interface {
-	// Rand returns a random number from 1 to 100
+	// Rand returns a random number from 0 to 99
 	// The provided context is used to cancel the request if it takes too long.
 	Rand(ctx context.Context) (int, error)
 }

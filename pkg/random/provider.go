@@ -47,5 +47,5 @@ func (p *provider) Rand(ctx context.Context) (int, error) {
 		return 0, fmt.Errorf("unmarshal body: %w", err)
 	}
 
-	return res.RandomNumber, nil
+	return res.RandomNumber - 1, nil
 }

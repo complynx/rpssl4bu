@@ -2,37 +2,45 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/complynx/rpssl4bu/pkg"
 	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 )
 
 type server struct {
 	srv *http.Server
+	log *zap.Logger
 }
 
-func StartHTTPServer(port int, api pkg.GameAPI) pkg.Server {
+func StartHTTPServer(listen string, api pkg.GameAPI, log *zap.Logger) pkg.Server {
 	mux := setupRouter(api)
 	srv := &server{
 		srv: &http.Server{
-			Addr:    fmt.Sprintf(":%d", port),
+			Addr:    listen,
 			Handler: mux,
 		},
+		log: log,
 	}
 
 	go func() {
 		if err := srv.srv.ListenAndServe(); err != nil {
-			fmt.Println("Server error: %w", err)
+			log.Error("Server error", zap.Error(err))
 		}
 	}()
+
+	log.Info("Server started", zap.Any("address", listen))
 
 	return srv
 }
 
 func setupRouter(api pkg.GameAPI) *chi.Mux {
 	httpRouter := chi.NewMux()
+
+	httpRouter.Use(
+		WithAccessControlAllowOrigin(),
+	)
 
 	httpRouter.HandleFunc("/choices", api.Choices)
 	httpRouter.HandleFunc("/choice", api.Choice)
@@ -43,4 +51,6 @@ func setupRouter(api pkg.GameAPI) *chi.Mux {
 
 func (srv *server) Shutdown(ctx context.Context) {
 	srv.srv.Shutdown(ctx)
+
+	srv.log.Info("Server stopped")
 }

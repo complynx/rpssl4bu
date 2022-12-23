@@ -7,6 +7,7 @@ import (
 	"runtime"
 
 	"github.com/complynx/rpssl4bu/pkg"
+	"github.com/complynx/rpssl4bu/pkg/types"
 	"go.uber.org/zap"
 )
 
@@ -83,9 +84,9 @@ func (a *gameAPI) Choice(w http.ResponseWriter, r *http.Request) {
 }
 
 type playResult struct {
-	Results  string `json:"results"`
-	Player   int    `json:"player"`
-	Computer int    `json:"computer"`
+	Results  types.Result `json:"results"`
+	Player   int          `json:"player"`
+	Computer int          `json:"computer"`
 }
 
 func (a *gameAPI) Play(w http.ResponseWriter, r *http.Request) {
@@ -97,7 +98,7 @@ func (a *gameAPI) Play(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		Player int `json:"player"`
+		Player types.Choice `json:"player"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -108,7 +109,7 @@ func (a *gameAPI) Play(w http.ResponseWriter, r *http.Request) {
 
 	a.marshalAndSend(playResult{
 		Results:  res,
-		Player:   req.Player,
-		Computer: choice.ID,
+		Player:   req.Player.Int(),
+		Computer: choice.Int(),
 	}, err, w)
 }

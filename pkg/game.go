@@ -3,6 +3,8 @@ package pkg
 import (
 	"context"
 	"net/http"
+
+	"github.com/complynx/rpssl4bu/pkg/types"
 )
 
 //go:generate mockery --srcpkg github.com/complynx/rpssl4bu/pkg --all --with-expecter
@@ -12,14 +14,6 @@ type Server interface {
 	// Shutdown shuts down the server.
 	// The provided context is used to cancel any ongoing operations.
 	Shutdown(ctx context.Context)
-}
-
-// Choice represents a game choice.
-type Choice struct {
-	// ID is the unique identifier of the choice.
-	ID int `json:"id"`
-	// Name is the name of the choice.
-	Name string `json:"name"`
 }
 
 // RandomProvider is an interface that represents a provider of random numbers.
@@ -32,12 +26,12 @@ type RandomProvider interface {
 // Game is an interface that represents a game.
 type Game interface {
 	// Choices returns the list of all choices.
-	Choices(context.Context) ([]Choice, error)
+	Choices(context.Context) ([]types.Choice, error)
 	// Choice returns a random choice.
-	Choice(context.Context) (Choice, error)
+	Choice(context.Context) (types.Choice, error)
 	// Play runs the game based on users choice and returns the game result and
 	// the choice made by the the computer.
-	Play(context.Context, int) (string, Choice, error)
+	Play(context.Context, types.Choice) (types.Result, types.Choice, error)
 }
 
 // GameAPI is an interface that represents the API of the game.
@@ -50,3 +44,7 @@ type GameAPI interface {
 	// and returns the game result and the choices made by the player and the computer.
 	Play(http.ResponseWriter, *http.Request)
 }
+
+// type Cache interface {
+// 	GetLastScores() ([]int,)
+// }

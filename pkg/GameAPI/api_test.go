@@ -1,15 +1,14 @@
 package gameapi
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/complynx/rpssl4bu/pkg"
 	"github.com/complynx/rpssl4bu/pkg/mocks"
+	"github.com/complynx/rpssl4bu/pkg/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"go.uber.org/zap"
@@ -46,6 +45,7 @@ func TestChoices(t *testing.T) {
 		name           string
 		game           *mocks.Game
 		request        *http.Request
+		requestChoices []types.Choice
 		expectedStatus int
 		expectedBody   interface{}
 		expectedLogs   []string
@@ -55,21 +55,16 @@ func TestChoices(t *testing.T) {
 			name:           "Choices success",
 			game:           mocks.NewGame(t),
 			request:        httptest.NewRequest(http.MethodGet, "/choices", nil),
+			requestChoices: []types.Choice{types.Lizard, types.Paper},
 			expectedStatus: http.StatusOK,
-			expectedBody: []pkg.Choice{
-				{ID: 1, Name: "Rock"},
-				{ID: 2, Name: "Paper"},
-				{ID: 3, Name: "Scissors"},
-			},
-			expectedLogs: []string{},
-			expectedErr:  nil,
+			expectedBody:   []byte(`[{"id":3,"name":"lizard"},{"id":1,"name":"paper"}]`),
+			expectedLogs:   []string{},
 		},
 		{
 			name:           "Choices error",
 			game:           mocks.NewGame(t),
 			request:        httptest.NewRequest(http.MethodGet, "/choices", nil),
 			expectedStatus: http.StatusInternalServerError,
-			expectedBody:   nil,
 			expectedLogs:   []string{"Error during request processing"},
 			expectedErr:    errors.New("Error getting choices"),
 		},
@@ -86,21 +81,13 @@ func TestChoices(t *testing.T) {
 
 			// Test
 			w := httptest.NewRecorder()
-			tc.game.On("Choices", mock.Anything).Return(tc.expectedBody, tc.expectedErr)
+			tc.game.On("Choices", mock.Anything).Return(tc.requestChoices, tc.expectedErr)
 			api.Choices(w, tc.request)
 
 			// Assert
 			assert.Equal(t, tc.expectedStatus, w.Code, "Wrong status code")
 			if tc.expectedBody != nil {
-				var actual []pkg.Choice
-				if err := json.Unmarshal(w.Body.Bytes(), &actual); err != nil {
-					t.Fatal(err)
-				}
-				expected, ok := tc.expectedBody.([]pkg.Choice)
-				if !ok {
-					t.Fatalf("Unexpected type for expected body: %T", tc.expectedBody)
-				}
-				assert.Equal(t, expected, actual, "Wrong response body")
+				assert.Equal(t, tc.expectedBody, w.Body.Bytes(), "Wrong response body")
 			}
 			// Assert logs
 			logs := observedLogs.All()
@@ -128,7 +115,7 @@ func TestChoice(t *testing.T) {
 		game           *mocks.Game
 		request        *http.Request
 		expectedStatus int
-		expectedBody   interface{}
+		expectedBody   []byte
 		expectedLogs   []string
 		expectedErr    error
 	}{
@@ -137,7 +124,7 @@ func TestChoice(t *testing.T) {
 			game:           mocks.NewGame(t),
 			request:        httptest.NewRequest(http.MethodGet, "/choice", nil),
 			expectedStatus: http.StatusOK,
-			expectedBody:   pkg.Choice{ID: 1, Name: "Rock"},
+			expectedBody:   []byte(`{"id":0,"name":"rock"}`),
 			expectedLogs:   []string{},
 			expectedErr:    nil,
 		},
@@ -163,26 +150,13 @@ func TestChoice(t *testing.T) {
 
 			// Test
 			w := httptest.NewRecorder()
-			if tc.expectedBody != nil {
-				tc.game.On("Choice", mock.Anything).Return(tc.expectedBody, tc.expectedErr)
-			} else {
-				tc.game.On("Choice", mock.Anything).Return(pkg.Choice{}, tc.expectedErr)
-
-			}
+			tc.game.On("Choice", mock.Anything).Return(types.Rock, tc.expectedErr)
 			api.Choice(w, tc.request)
 
 			// Assert
 			assert.Equal(t, tc.expectedStatus, w.Code, "Wrong status code")
 			if tc.expectedBody != nil {
-				var actual pkg.Choice
-				if err := json.Unmarshal(w.Body.Bytes(), &actual); err != nil {
-					t.Fatal(err)
-				}
-				expected, ok := tc.expectedBody.(pkg.Choice)
-				if !ok {
-					t.Fatalf("Unexpected type for expected body: %T", tc.expectedBody)
-				}
-				assert.Equal(t, expected, actual, "Wrong response body")
+				assert.Equal(t, tc.expectedBody, w.Body.Bytes(), "Wrong response body")
 			}
 			// Assert logs
 			logs := observedLogs.All()
@@ -210,29 +184,23 @@ func TestPlay(t *testing.T) {
 		game           *mocks.Game
 		request        *http.Request
 		expectedStatus int
-		expectedBody   *playResult
+		expectedBody   []byte
 		expectedLogs   []string
 		expectedErr    error
 	}{
 		{
 			name:           "Play success",
 			game:           mocks.NewGame(t),
-			request:        httptest.NewRequest(http.MethodPost, "/play", strings.NewReader("{\"player\":42}")),
+			request:        httptest.NewRequest(http.MethodPost, "/play", strings.NewReader("{\"player\":3}")),
 			expectedStatus: http.StatusOK,
-			expectedBody: &playResult{
-				Results:  "win",
-				Player:   42,
-				Computer: 0,
-			},
-			expectedLogs: []string{},
-			expectedErr:  nil,
+			expectedBody:   []byte(`{"results":"win","player":3,"computer":3}`),
+			expectedLogs:   []string{},
 		},
 		{
 			name:           "Play error",
 			game:           mocks.NewGame(t),
-			request:        httptest.NewRequest(http.MethodPost, "/play", strings.NewReader("{\"player\":42}")),
+			request:        httptest.NewRequest(http.MethodPost, "/play", strings.NewReader("{\"player\":3}")),
 			expectedStatus: http.StatusInternalServerError,
-			expectedBody:   nil,
 			expectedLogs:   []string{"Error during request processing"},
 			expectedErr:    errors.New("Error getting play"),
 		},
@@ -250,12 +218,9 @@ func TestPlay(t *testing.T) {
 			// Test
 			w := httptest.NewRecorder()
 			if tc.expectedBody != nil {
-				tc.game.On("Play", mock.Anything, 42).Return(tc.expectedBody.Results, pkg.Choice{
-					ID:   tc.expectedBody.Computer,
-					Name: "not important",
-				}, tc.expectedErr)
+				tc.game.On("Play", mock.Anything, types.Lizard).Return(types.Win, types.Lizard, tc.expectedErr)
 			} else {
-				tc.game.On("Play", mock.Anything, 42).Return("", pkg.Choice{}, tc.expectedErr)
+				tc.game.On("Play", mock.Anything, types.Lizard).Return(types.Tie, types.Lizard, tc.expectedErr)
 
 			}
 			api.Play(w, tc.request)
@@ -263,11 +228,7 @@ func TestPlay(t *testing.T) {
 			// Assert
 			assert.Equal(t, tc.expectedStatus, w.Code, "Wrong status code")
 			if tc.expectedBody != nil {
-				var actual *playResult
-				if err := json.Unmarshal(w.Body.Bytes(), &actual); err != nil {
-					t.Fatal(err)
-				}
-				assert.Equal(t, tc.expectedBody, actual, "Wrong response body")
+				assert.Equal(t, tc.expectedBody, w.Body.Bytes(), "Wrong response body")
 			}
 			// Assert logs
 			logs := observedLogs.All()

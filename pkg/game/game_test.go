@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/complynx/rpssl4bu/pkg"
 	"github.com/complynx/rpssl4bu/pkg/mocks"
+	"github.com/complynx/rpssl4bu/pkg/types"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -21,34 +21,16 @@ type gameTestSuite struct {
 
 func (s *gameTestSuite) TestGameResult() {
 	s.Run("tie", func() {
-		tie, win := GameResult(0, 0)
-		s.True(tie)
-		s.False(win)
+		res := GameResult(0, 0)
+		s.Equal(types.Tie, res)
 	})
 	s.Run("win", func() {
-		tie, win := GameResult(1, 0)
-		s.True(win)
-		s.False(tie)
+		res := GameResult(1, 0)
+		s.Equal(types.Win, res)
 	})
 	s.Run("lose", func() {
-		tie, win := GameResult(0, 1)
-		s.False(win)
-		s.False(tie)
-	})
-}
-
-func (s *gameTestSuite) TestStringResult() {
-	s.Run("tie", func() {
-		res := StringResult(0, 0)
-		s.Equal("tie", res)
-	})
-	s.Run("win", func() {
-		res := StringResult(1, 0)
-		s.Equal("win", res)
-	})
-	s.Run("lose", func() {
-		res := StringResult(0, 1)
-		s.Equal("lose", res)
+		res := GameResult(0, 1)
+		s.Equal(types.Lose, res)
 	})
 }
 
@@ -57,13 +39,7 @@ func (s *gameTestSuite) TestChoices() {
 
 	res, err := game.Choices(context.Background())
 	s.NoError(err)
-	s.Equal([]pkg.Choice{
-		{ID: 0, Name: "rock"},
-		{ID: 1, Name: "paper"},
-		{ID: 2, Name: "scissors"},
-		{ID: 3, Name: "lizard"},
-		{ID: 4, Name: "spock"},
-	}, res)
+	s.Equal([]types.Choice{0, 1, 2, 3, 4}, res)
 }
 
 func (s *gameTestSuite) TestChoice() {
@@ -88,10 +64,7 @@ func (s *gameTestSuite) TestChoice() {
 
 		res, err := game.Choice(context.Background())
 		s.NoError(err)
-		s.Equal(pkg.Choice{
-			ID:   2,
-			Name: "scissors",
-		}, res)
+		s.Equal(types.Scissors, res)
 	})
 }
 func (s *gameTestSuite) TestPlay() {
@@ -116,10 +89,7 @@ func (s *gameTestSuite) TestPlay() {
 
 		res, choice, err := game.Play(context.Background(), 1)
 		s.NoError(err)
-		s.Equal(pkg.Choice{
-			ID:   2,
-			Name: "scissors",
-		}, choice)
-		s.Equal(res, "lose")
+		s.Equal(types.Scissors, choice)
+		s.Equal(types.Lose, res)
 	})
 }

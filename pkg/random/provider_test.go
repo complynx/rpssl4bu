@@ -28,7 +28,7 @@ func TestProvider_Rand(t *testing.T) {
 				addr: "http://example.com",
 			},
 			response: &response{
-				RandomNumber: 42,
+				RandomNumber: 43,
 			},
 			expectedRand: 42,
 			expectedErr:  nil,

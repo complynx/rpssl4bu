@@ -5,23 +5,16 @@ import (
 	"fmt"
 
 	"github.com/complynx/rpssl4bu/pkg"
+	"github.com/complynx/rpssl4bu/pkg/types"
 )
 
 type game struct {
 	rng pkg.RandomProvider
 }
 
-var names = []string{
-	"rock",
-	"paper",
-	"scissors",
-	"lizard",
-	"spock",
-}
-
 type pair struct {
-	p1 int
-	p2 int
+	p1 types.Choice
+	p2 types.Choice
 }
 
 var victoryMap = map[pair]bool{
@@ -62,26 +55,17 @@ var victoryMap = map[pair]bool{
 }
 
 // returns tie and win results for player p1 against p2
-func GameResult(p1 int, p2 int) (bool, bool) {
+func GameResult(p1, p2 types.Choice) types.Result {
 	if p1 == p2 {
-		return true, false
+		return types.Tie
 	}
-	return false, victoryMap[pair{
+	if victoryMap[pair{
 		p1: p1,
 		p2: p2,
-	}]
-}
-
-// returns tie and win results as string for player p1 against p2
-func StringResult(p1 int, p2 int) string {
-	tie, win := GameResult(p1, p2)
-	if tie {
-		return "tie"
+	}] {
+		return types.Win
 	}
-	if win {
-		return "win"
-	}
-	return "lose"
+	return types.Lose
 }
 
 func NewGame(rng pkg.RandomProvider) pkg.Game {
@@ -90,37 +74,29 @@ func NewGame(rng pkg.RandomProvider) pkg.Game {
 	}
 }
 
-func (g *game) Choices(ctx context.Context) ([]pkg.Choice, error) {
-	ret := make([]pkg.Choice, len(names))
-	for i, s := range names {
-		ret[i] = pkg.Choice{
-			ID:   i,
-			Name: s,
-		}
+func (g *game) Choices(ctx context.Context) ([]types.Choice, error) {
+	ret := make([]types.Choice, 0, 5)
+	for i := 0; i < 5; i++ {
+		ret = append(ret, types.IntToChoice(i))
 	}
 	return ret, nil
 }
 
-func (g *game) Choice(ctx context.Context) (pkg.Choice, error) {
+func (g *game) Choice(ctx context.Context) (types.Choice, error) {
 	num, err := g.rng.Rand(ctx)
 	if err != nil {
-		return pkg.Choice{}, fmt.Errorf("generate random number: %w", err)
+		return types.Lizard, fmt.Errorf("generate random number: %w", err)
 	}
 
-	numFactor := num % len(names)
-
-	return pkg.Choice{
-		ID:   numFactor,
-		Name: names[numFactor],
-	}, nil
+	return types.IntToChoiceErr(num % 5)
 }
 
-func (g *game) Play(ctx context.Context, playerID int) (string, pkg.Choice, error) {
+func (g *game) Play(ctx context.Context, player types.Choice) (types.Result, types.Choice, error) {
 
 	computerChoice, err := g.Choice(ctx)
 	if err != nil {
-		return "", pkg.Choice{}, fmt.Errorf("get computer choice: %w", err)
+		return types.Tie, types.Spock, fmt.Errorf("get computer choice: %w", err)
 	}
 
-	return StringResult(playerID, computerChoice.ID), computerChoice, nil
+	return GameResult(player, computerChoice), computerChoice, nil
 }

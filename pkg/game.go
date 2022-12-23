@@ -45,6 +45,8 @@ type GameAPI interface {
 	Play(http.ResponseWriter, *http.Request)
 }
 
-// type Cache interface {
-// 	GetLastScores() ([]int,)
-// }
+type Storage interface {
+	GetLastScores() ([]types.Result, error)
+	SetLastScore(types.Result) error
+	ClearScores() error
+}

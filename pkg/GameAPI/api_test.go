@@ -77,7 +77,7 @@ func TestChoices(t *testing.T) {
 			observedZapCore, observedLogs := observer.New(zap.InfoLevel)
 			observedLogger := zap.New(observedZapCore)
 			// Create gameAPI instance
-			api := NewGameAPI(tc.game, observedLogger)
+			api := NewGameAPI(tc.game, nil, observedLogger)
 
 			// Test
 			w := httptest.NewRecorder()
@@ -146,7 +146,7 @@ func TestChoice(t *testing.T) {
 			observedZapCore, observedLogs := observer.New(zap.InfoLevel)
 			observedLogger := zap.New(observedZapCore)
 			// Create gameAPI instance
-			api := NewGameAPI(tc.game, observedLogger)
+			api := NewGameAPI(tc.game, nil, observedLogger)
 
 			// Test
 			w := httptest.NewRecorder()
@@ -213,7 +213,7 @@ func TestPlay(t *testing.T) {
 			observedZapCore, observedLogs := observer.New(zap.InfoLevel)
 			observedLogger := zap.New(observedZapCore)
 			// Create gameAPI instance
-			api := NewGameAPI(tc.game, observedLogger)
+			api := NewGameAPI(tc.game, nil, observedLogger)
 
 			// Test
 			w := httptest.NewRecorder()
@@ -284,7 +284,7 @@ func TestMethods(t *testing.T) {
 			observedZapCore, observedLogs := observer.New(zap.InfoLevel)
 			observedLogger := zap.New(observedZapCore)
 			// Create gameAPI instance
-			api := NewGameAPI(tc.game, observedLogger)
+			api := NewGameAPI(tc.game, nil, observedLogger)
 
 			// Test
 			w := httptest.NewRecorder()
@@ -313,7 +313,7 @@ func TestGameAPI_Play_BadRequest(t *testing.T) {
 	observedZapCore, observedLogs := observer.New(zap.InfoLevel)
 	observedLogger := zap.New(observedZapCore)
 	game := mocks.NewGame(t)
-	api := NewGameAPI(game, observedLogger)
+	api := NewGameAPI(game, nil, observedLogger)
 
 	// Test
 	request, err := http.NewRequest(http.MethodPost, "/play", strings.NewReader("{invalid json}"))

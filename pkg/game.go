@@ -50,3 +50,19 @@ type Storage interface {
 	SetLastScore(types.Result) error
 	ClearScores() error
 }
+
+type P2PGameFactory interface {
+	CreateGame(ctx context.Context) (P2PGame, error)
+	StopGames(ctx context.Context)
+	GetGame(id types.GameID) (P2PGame, bool)
+}
+
+type P2PGame interface {
+	GetID() types.GameID
+	// adds player with given name, name is checked to be of latin alphabet (+spaces) and not more than
+	// 20 symbols. If no name provided, user is called Anonymous.
+	// returns the side of the player true = right
+	// and channel for messages
+	AddPlayer(name string) (bool, chan types.Message, error)
+	RemovePlayer(rightSide bool)
+}

@@ -70,7 +70,7 @@ func main() {
 	gameEngine := game.NewGame(rng)
 
 	// Create API
-	api := gameapi.NewGameAPI(gameEngine, logger.Named("GameAPI"))
+	api := gameapi.NewGameAPI(gameEngine, nil, logger.Named("GameAPI"))
 
 	if addr == nil {
 		addr = &defaultAddr

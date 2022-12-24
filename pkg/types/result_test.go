@@ -26,6 +26,26 @@ func TestResultString(t *testing.T) {
 	}
 }
 
+func TestResultSwap(t *testing.T) {
+	tests := []struct {
+		res  Result
+		want Result
+	}{
+		{Tie, Tie},
+		{Win, Lose},
+		{Lose, Win},
+		{Result(123), Result(123)},
+	}
+	for _, test := range tests {
+		t.Run(fmt.Sprintf("%v", test.res), func(t *testing.T) {
+			got := test.res.Swap()
+			if got != test.want {
+				t.Errorf("Result.Swap() = %q, want %q", got, test.want)
+			}
+		})
+	}
+}
+
 func TestResultFromInt(t *testing.T) {
 	tests := []struct {
 		res Result
@@ -34,7 +54,7 @@ func TestResultFromInt(t *testing.T) {
 		{Tie, 2},
 		{Lose, 1},
 		{Win, 0},
-		{Tie, 3},
+		{Unknown, 3},
 	}
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("Result from int %d", test.i), func(t *testing.T) {

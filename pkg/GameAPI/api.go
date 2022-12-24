@@ -2,24 +2,31 @@ package gameapi
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"runtime"
 
 	"github.com/complynx/rpssl4bu/pkg"
 	"github.com/complynx/rpssl4bu/pkg/types"
+	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 )
 
 type gameAPI struct {
-	game pkg.Game
-	log  *zap.Logger
+	game       pkg.Game
+	p2pFactory pkg.P2PGameFactory
+	log        *zap.Logger
+	upgrader   websocket.Upgrader
 }
 
-func NewGameAPI(game pkg.Game, log *zap.Logger) pkg.GameAPI {
+func NewGameAPI(game pkg.Game, p2pFactory pkg.P2PGameFactory, log *zap.Logger) pkg.GameAPI {
 	return &gameAPI{
-		log:  log,
-		game: game,
+		log:        log,
+		game:       game,
+		p2pFactory: p2pFactory,
+		upgrader: websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+		},
 	}
 }
 
@@ -28,7 +35,7 @@ func (a *gameAPI) doRecover(w http.ResponseWriter) {
 		buf := make([]byte, 1<<16)
 		stackSize := runtime.Stack(buf, false)
 		httpCode(w, http.StatusInternalServerError)
-		a.log.Panic(fmt.Sprintf("%s", r), zap.Any("stack_trace", buf[:stackSize]))
+		a.log.Error("Panic in api call", zap.Any("panic", r), zap.Any("stack_trace", buf[:stackSize]))
 	}
 }
 
@@ -112,4 +119,53 @@ func (a *gameAPI) Play(w http.ResponseWriter, r *http.Request) {
 		Player:   req.Player.Int(),
 		Computer: choice.Int(),
 	}, err, w)
+}
+
+func (a *gameAPI) CreateP2P(w http.ResponseWriter, r *http.Request) {
+	defer a.doRecover(w)
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	game, err := a.p2pFactory.CreateGame(r.Context())
+	if err != nil {
+		a.sendErr(err, w, http.StatusInternalServerError)
+		return
+	}
+
+	a.marshalAndSend(game.GetID(), err, w)
+}
+
+func (a *gameAPI) ConnectP2P(w http.ResponseWriter, r *http.Request) {
+	defer a.doRecover(w)
+
+	id, err := types.GameIDFromString(r.URL.Query().Get("g"))
+	if err != nil {
+		httpCode(w, http.StatusBadRequest)
+		return
+	}
+
+	name := r.URL.Query().Get("name")
+
+	game, found := a.p2pFactory.GetGame(id)
+	if !found {
+		httpCode(w, http.StatusNotFound)
+		return
+	}
+
+	side, ch, err := game.AddPlayer(name)
+	if err != nil {
+		httpCode(w, http.StatusNotFound)
+		return
+	}
+	defer game.RemovePlayer(side)
+
+	conn, err := a.upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		a.sendErr(err, w, http.StatusInternalServerError)
+		return
+	}
+	defer conn.Close()
 }

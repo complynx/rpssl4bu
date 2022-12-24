@@ -38,7 +38,7 @@ func TestChoiceFromInt(t *testing.T) {
 		{Scissors, 2},
 		{Lizard, 3},
 		{Spock, 4},
-		{Spock, 5},
+		{Undefined, 5},
 	}
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("Choice from int %d", test.i), func(t *testing.T) {
@@ -108,7 +108,7 @@ func TestChoiceMarshalJSON(t *testing.T) {
 	}
 }
 
-func TestChoiceUnmarshalJSON(t *testing.T) {
+func TestUnmarshalJSON(t *testing.T) {
 	tests := []struct {
 		name    string
 		data    []byte

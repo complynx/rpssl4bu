@@ -13,6 +13,8 @@ const (
 	Scissors
 	Lizard
 	Spock
+
+	Undefined Choice = 0xff
 )
 
 var choiceToString = map[Choice]string{
@@ -88,14 +90,14 @@ func (r Choice) Int() int {
 func IntToChoice(i int) Choice {
 	c, err := IntToChoiceErr(i)
 	if err != nil {
-		return Spock
+		return Undefined
 	}
 	return c
 }
 
 func IntToChoiceErr(i int) (Choice, error) {
 	if i < 0 || i > 4 {
-		return Spock, fmt.Errorf("wrong choice ID")
+		return Undefined, fmt.Errorf("wrong choice ID")
 	}
 	return Choice(i), nil
 }

@@ -168,6 +168,9 @@ func (g *p2pgame) RemovePlayer(rightSide bool) {
 	close(g.p1.Chan)
 }
 
+func (g *p2pgame) Choice(choice types.Choice, rightSide bool) {
+}
+
 func (g *p2pgame) run() {
 	defer g.log.Info("p2p game finished")
 	defer g.factory.removeGame(g.ID)

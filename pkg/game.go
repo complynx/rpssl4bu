@@ -65,4 +65,5 @@ type P2PGame interface {
 	// and channel for messages
 	AddPlayer(name string) (bool, chan types.Message, error)
 	RemovePlayer(rightSide bool)
+	Choice(choice types.Choice, rightSide bool)
 }

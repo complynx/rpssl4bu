@@ -6,7 +6,6 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./frontend:/frontend
       - ./configs/nginx/conf.d/:/etc/nginx/conf.d
     logging:
         driver: "json-file"
@@ -15,6 +14,7 @@ services:
             max-size: "10m"
     links:
     - backend
+    - frontend
 
   backend:
     build:
@@ -28,3 +28,8 @@ services:
     environment:
       - EXTERNAL_RNG
     entrypoint: ["./main", "--log-type", "json", "--addr", ":8080", "--rng", "${EXTERNAL_RNG}"]
+
+  frontend:
+    build:
+      context: ./frontend_vue
+    image: rpssl4bu_vue

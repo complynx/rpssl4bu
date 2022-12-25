@@ -71,6 +71,7 @@ func (a *gameAPI) Choices(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
+	a.log.Info("sending Choices")
 
 	choices, err := a.game.Choices(r.Context())
 
@@ -86,6 +87,10 @@ func (a *gameAPI) Choice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	choice, err := a.game.Choice(r.Context())
+
+	if err == nil {
+		a.log.Info("randomly chosen choice", zap.Any("computer_choice", choice))
+	}
 
 	a.marshalAndSend(choice, err, w)
 }
@@ -113,6 +118,14 @@ func (a *gameAPI) Play(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res, choice, err := a.game.Play(r.Context(), req.Player)
+
+	if err == nil {
+		a.log.Info("game with computer",
+			zap.Any("result", res),
+			zap.Any("player_choice", req.Player),
+			zap.Any("computer_choice", choice),
+		)
+	}
 
 	a.marshalAndSend(playResult{
 		Results:  res,

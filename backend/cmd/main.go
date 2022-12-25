@@ -65,7 +65,7 @@ func main() {
 	if rngAddr == nil || *rngAddr == "" {
 		rng = random.NewSimpleRandom("")
 	} else {
-		rng = random.NewProvider(*rngAddr)
+		rng = random.NewProvider(*rngAddr, logger.Named("Random Provider"))
 	}
 	gameEngine := game.NewGame(rng)
 

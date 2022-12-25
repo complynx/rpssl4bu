@@ -1,0 +1,30 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./frontend:/frontend
+      - ./configs/nginx/conf.d/:/etc/nginx/conf.d
+    logging:
+        driver: "json-file"
+        options:
+            max-file: "5"
+            max-size: "10m"
+    links:
+    - backend
+
+  backend:
+    build:
+      context: ./backend
+    image: rpssl4bu_backend
+    logging:
+        driver: "json-file"
+        options:
+            max-file: "5"
+            max-size: "10m"
+    environment:
+      - EXTERNAL_RNG
+    entrypoint: ["./main", "--log-type", "json", "--addr", ":8080", "--rng", "${EXTERNAL_RNG}"]

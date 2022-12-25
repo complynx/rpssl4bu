@@ -5,7 +5,6 @@ WORKDIR /app
 
 # Copy the source code
 COPY . .
-COPY static static
 
 # Build the binary
 RUN go build -o main ./cmd/main.go
@@ -17,7 +16,6 @@ RUN apk add --no-cache ca-certificates
 
 # Copy the binary from the builder image
 COPY --from=builder /app/main .
-COPY --from=builder /app/static static
 
 # Expose the server port
 EXPOSE 8080

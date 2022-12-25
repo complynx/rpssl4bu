@@ -9,11 +9,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/complynx/rpssl4bu/pkg"
-	gameapi "github.com/complynx/rpssl4bu/pkg/GameAPI"
-	"github.com/complynx/rpssl4bu/pkg/game"
-	"github.com/complynx/rpssl4bu/pkg/random"
-	"github.com/complynx/rpssl4bu/pkg/server"
+	"github.com/complynx/rpssl4bu/backend/pkg"
+	gameapi "github.com/complynx/rpssl4bu/backend/pkg/GameAPI"
+	"github.com/complynx/rpssl4bu/backend/pkg/game"
+	"github.com/complynx/rpssl4bu/backend/pkg/random"
+	"github.com/complynx/rpssl4bu/backend/pkg/server"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

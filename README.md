@@ -9,6 +9,8 @@ The server can also use an external supply of random numbers.
 
 # Running
 
+First change directory to `./backend`.
+
 To build and run the code, first install the dependencies listed in `go.mod`
 then build with `go build -o rpssl ./cmd/main.go` and run the created executable.
 
@@ -22,6 +24,8 @@ You can provide arguments:
 You can combine these parameters as needed.
 
 # Docker run
+
+First change directory to `./backend`.
 
 1. `docker build -t rpssl4bu .`
 2. `docker run -e EXTERNAL_RNG=<rng_provider_address> rpssl4bu`

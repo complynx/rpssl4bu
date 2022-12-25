@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/complynx/rpssl4bu/pkg"
+	"github.com/complynx/rpssl4bu/backend/pkg"
 )
 
 type simple struct{}

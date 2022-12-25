@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/complynx/rpssl4bu/pkg"
+	"github.com/complynx/rpssl4bu/backend/pkg"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 )
@@ -15,7 +15,7 @@ type server struct {
 }
 
 func StartHTTPServer(listen string, api pkg.GameAPI, log *zap.Logger) pkg.Server {
-	mux := setupRouter(api)
+	mux := setupRouter(api, log)
 	srv := &server{
 		srv: &http.Server{
 			Addr:    listen,
@@ -35,7 +35,7 @@ func StartHTTPServer(listen string, api pkg.GameAPI, log *zap.Logger) pkg.Server
 	return srv
 }
 
-func setupRouter(api pkg.GameAPI) *chi.Mux {
+func setupRouter(api pkg.GameAPI, log *zap.Logger) *chi.Mux {
 	httpRouter := chi.NewMux()
 
 	httpRouter.Use(

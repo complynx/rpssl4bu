@@ -3,7 +3,7 @@ package storage
 import (
 	"testing"
 
-	"github.com/complynx/rpssl4bu/pkg/types"
+	"github.com/complynx/rpssl4bu/backend/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 

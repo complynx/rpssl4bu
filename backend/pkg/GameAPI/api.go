@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"runtime"
 
-	"github.com/complynx/rpssl4bu/pkg"
-	"github.com/complynx/rpssl4bu/pkg/types"
+	"github.com/complynx/rpssl4bu/backend/pkg"
+	"github.com/complynx/rpssl4bu/backend/pkg/types"
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 )

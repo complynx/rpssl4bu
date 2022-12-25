@@ -4,10 +4,10 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/complynx/rpssl4bu/pkg/types"
+	"github.com/complynx/rpssl4bu/backend/pkg/types"
 )
 
-//go:generate mockery --srcpkg github.com/complynx/rpssl4bu/pkg --all --with-expecter
+//go:generate mockery --srcpkg github.com/complynx/rpssl4bu/backend/pkg --all --with-expecter
 
 // Server is an interface that represents a server that can be shut down.
 type Server interface {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/complynx/rpssl4bu/pkg"
-	"github.com/complynx/rpssl4bu/pkg/types"
+	"github.com/complynx/rpssl4bu/backend/pkg"
+	"github.com/complynx/rpssl4bu/backend/pkg/types"
 )
 
 func RandomID(ctx context.Context, rng pkg.RandomProvider) (types.GameID, error) {

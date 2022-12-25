@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/complynx/rpssl4bu/pkg/mocks"
-	"github.com/complynx/rpssl4bu/pkg/types"
+	"github.com/complynx/rpssl4bu/backend/pkg/mocks"
+	"github.com/complynx/rpssl4bu/backend/pkg/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"go.uber.org/zap"

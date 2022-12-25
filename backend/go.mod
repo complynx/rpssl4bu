@@ -1,4 +1,4 @@
-module github.com/complynx/rpssl4bu
+module github.com/complynx/rpssl4bu/backend
 
 go 1.19
 

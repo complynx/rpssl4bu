@@ -139,14 +139,21 @@ export default {
     async makeChoice(id) {
       try {
         const response = await axios.post(this.backendServer + 'play', { player: id });
-        this.result = response.data.results;
-        this.computerChoice = this.weaponDict[response.data.computer].name;
-        this.yourChoice = this.weaponDict[response.data.player].name;
-        this.isShowResult = true;
-        await this.fetchScores();
+        this.showResult(
+          response.data.results,
+          this.weaponDict[response.data.computer].name,
+          this.weaponDict[response.data.player].name
+        );
       } catch (error) {
         console.error(error);
       }
+    },
+    showResult(result, playerChoice, computerChoice) {
+      this.result = result;
+      this.computerChoice = playerChoice;
+      this.yourChoice = computerChoice;
+      this.isShowResult = true;
+      this.fetchScores();
     },
     closeResultModal() {
       this.isShowResult = false;
@@ -171,6 +178,44 @@ export default {
 </script>
 
 <style>
+.weapon {
+  color:transparent;
+  width:5em;
+  height:5em;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  --translator: -80%;
+  --rotor-1: 45deg;
+  --rotor-1-back:calc(var(--rotor-1)*-1);
+  background-size: cover;
+}
+.weapon-1 {
+  transform: rotate(var(--rotor-1)) rotate(0deg) translate(var(--translator), var(--translator))  rotate(-0deg) rotate(var(--rotor-1-back));
+  background-image: url('./images/rock.png');
+}
+.weapon-2 {
+  transform: rotate(var(--rotor-1)) rotate(72deg) translate(var(--translator), var(--translator)) rotate(-72deg) rotate(var(--rotor-1-back));
+  background-image: url('./images/paper.png');
+}
+.weapon-3 {
+  transform: rotate(var(--rotor-1)) rotate(144deg) translate(var(--translator), var(--translator)) rotate(-144deg) rotate(var(--rotor-1-back));
+  background-image: url('./images/scissors.png');
+}
+.weapon-4 {
+  transform: rotate(var(--rotor-1)) rotate(216deg) translate(var(--translator), var(--translator)) rotate(-216deg) rotate(var(--rotor-1-back));
+  background-image: url('./images/lizard.png');
+}
+.weapon-5 {
+  transform: rotate(var(--rotor-1)) rotate(288deg) translate(var(--translator), var(--translator)) rotate(-288deg) rotate(var(--rotor-1-back));
+  background-image: url('./images/spock.png');
+}
+.weapons {
+  text-align: center;
+  position: relative;
+  height: 10em;
+}
+
 .game {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;

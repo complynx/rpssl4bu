@@ -33,12 +33,12 @@ func TestChoiceFromInt(t *testing.T) {
 		choice Choice
 		i      int
 	}{
-		{Rock, 0},
-		{Paper, 1},
-		{Scissors, 2},
-		{Lizard, 3},
-		{Spock, 4},
-		{Undefined, 5},
+		{Rock, 1},
+		{Paper, 2},
+		{Scissors, 3},
+		{Lizard, 4},
+		{Spock, 5},
+		{Undefined, 0},
 	}
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("Choice from int %d", test.i), func(t *testing.T) {
@@ -56,12 +56,13 @@ func TestChoiceFromIntErr(t *testing.T) {
 		i      int
 		err    bool
 	}{
-		{Rock, 0, false},
-		{Paper, 1, false},
-		{Scissors, 2, false},
-		{Lizard, 3, false},
-		{Spock, 4, false},
-		{Spock, 5, true},
+		{Rock, 1, false},
+		{Paper, 2, false},
+		{Scissors, 3, false},
+		{Lizard, 4, false},
+		{Spock, 5, false},
+		{Spock, 6, true},
+		{Spock, 0, true},
 		{Spock, -1, true},
 	}
 	for _, test := range tests {
@@ -84,11 +85,11 @@ func TestChoiceMarshalJSON(t *testing.T) {
 		want   []byte
 		err    string
 	}{
-		{Rock, []byte(`{"id":0,"name":"rock"}`), ""},
-		{Paper, []byte(`{"id":1,"name":"paper"}`), ""},
-		{Scissors, []byte(`{"id":2,"name":"scissors"}`), ""},
-		{Lizard, []byte(`{"id":3,"name":"lizard"}`), ""},
-		{Spock, []byte(`{"id":4,"name":"spock"}`), ""},
+		{Rock, []byte(`{"id":1,"name":"rock"}`), ""},
+		{Paper, []byte(`{"id":2,"name":"paper"}`), ""},
+		{Scissors, []byte(`{"id":3,"name":"scissors"}`), ""},
+		{Lizard, []byte(`{"id":4,"name":"lizard"}`), ""},
+		{Spock, []byte(`{"id":5,"name":"spock"}`), ""},
 	}
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("%v", test.choice), func(t *testing.T) {
@@ -117,7 +118,7 @@ func TestUnmarshalJSON(t *testing.T) {
 	}{
 		{
 			name: "unmarshal from struct",
-			data: []byte(`{"id":0,"name":"rock"}`),
+			data: []byte(`{"id":1,"name":"rock"}`),
 			want: Rock,
 		},
 		{
@@ -137,27 +138,27 @@ func TestUnmarshalJSON(t *testing.T) {
 		},
 		{
 			name: "unmarshal from int",
-			data: []byte(`0`),
+			data: []byte(`1`),
 			want: Rock,
 		},
 		{
 			name: "unmarshal from int",
-			data: []byte(`1`),
+			data: []byte(`2`),
 			want: Paper,
 		},
 		{
 			name: "unmarshal from int",
-			data: []byte(`2`),
+			data: []byte(`3`),
 			want: Scissors,
 		},
 		{
 			name: "unmarshal from int",
-			data: []byte(`3`),
+			data: []byte(`4`),
 			want: Lizard,
 		},
 		{
 			name: "unmarshal from int",
-			data: []byte(`4`),
+			data: []byte(`5`),
 			want: Spock,
 		},
 		{
@@ -167,12 +168,17 @@ func TestUnmarshalJSON(t *testing.T) {
 		},
 		{
 			name:    "unmarshal from invalid int",
-			data:    []byte(`5`),
+			data:    []byte(`6`),
 			wantErr: true,
 		},
 		{
 			name:    "unmarshal from invalid int",
 			data:    []byte(`-1`),
+			wantErr: true,
+		},
+		{
+			name:    "unmarshal from invalid int",
+			data:    []byte(`0`),
 			wantErr: true,
 		},
 	}

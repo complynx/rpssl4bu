@@ -43,6 +43,9 @@ type GameAPI interface {
 	// Play handles the POST /play request with users choice in the payload
 	// and returns the game result and the choices made by the player and the computer.
 	Play(http.ResponseWriter, *http.Request)
+
+	GetScores(w http.ResponseWriter, r *http.Request)
+	ClearScores(w http.ResponseWriter, r *http.Request)
 }
 
 type Storage interface {

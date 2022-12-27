@@ -14,6 +14,7 @@ import (
 	"github.com/complynx/rpssl4bu/backend/pkg/game"
 	"github.com/complynx/rpssl4bu/backend/pkg/random"
 	"github.com/complynx/rpssl4bu/backend/pkg/server"
+	"github.com/complynx/rpssl4bu/backend/pkg/storage"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -69,8 +70,10 @@ func main() {
 	}
 	gameEngine := game.NewGame(rng)
 
+	storage := storage.NewSimple(10)
+
 	// Create API
-	api := gameapi.NewGameAPI(gameEngine, nil, logger.Named("GameAPI"))
+	api := gameapi.NewGameAPI(gameEngine, nil, storage, logger.Named("GameAPI"))
 
 	if addr == nil {
 		addr = &defaultAddr

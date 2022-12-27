@@ -8,13 +8,12 @@ import (
 type Choice byte
 
 const (
-	Rock Choice = iota
+	Undefined Choice = iota
+	Rock
 	Paper
 	Scissors
 	Lizard
 	Spock
-
-	Undefined Choice = 0xff
 )
 
 var choiceToString = map[Choice]string{
@@ -96,7 +95,7 @@ func IntToChoice(i int) Choice {
 }
 
 func IntToChoiceErr(i int) (Choice, error) {
-	if i < 0 || i > 4 {
+	if i < int(Rock) || i > int(Spock) {
 		return Undefined, fmt.Errorf("wrong choice ID")
 	}
 	return Choice(i), nil

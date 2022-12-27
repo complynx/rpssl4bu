@@ -16,9 +16,10 @@ type gameAPI struct {
 	p2pFactory pkg.P2PGameFactory
 	log        *zap.Logger
 	upgrader   websocket.Upgrader
+	storage    pkg.Storage
 }
 
-func NewGameAPI(game pkg.Game, p2pFactory pkg.P2PGameFactory, log *zap.Logger) pkg.GameAPI {
+func NewGameAPI(game pkg.Game, p2pFactory pkg.P2PGameFactory, storage pkg.Storage, log *zap.Logger) pkg.GameAPI {
 	return &gameAPI{
 		log:        log,
 		game:       game,
@@ -27,6 +28,7 @@ func NewGameAPI(game pkg.Game, p2pFactory pkg.P2PGameFactory, log *zap.Logger) p
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 		},
+		storage: storage,
 	}
 }
 
@@ -120,6 +122,11 @@ func (a *gameAPI) Play(w http.ResponseWriter, r *http.Request) {
 	res, choice, err := a.game.Play(r.Context(), req.Player)
 
 	if err == nil {
+		if err := a.storage.SetLastScore(res); err != nil {
+			a.log.Error("Failed to save last score",
+				zap.Error(err),
+			)
+		}
 		a.log.Info("game with computer",
 			zap.Any("result", res),
 			zap.Any("player_choice", req.Player),
@@ -132,6 +139,30 @@ func (a *gameAPI) Play(w http.ResponseWriter, r *http.Request) {
 		Player:   req.Player.Int(),
 		Computer: choice.Int(),
 	}, err, w)
+}
+
+func (a *gameAPI) GetScores(w http.ResponseWriter, r *http.Request) {
+	defer a.doRecover(w)
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	scores, err := a.storage.GetLastScores()
+
+	a.marshalAndSend(scores, err, w)
+}
+
+func (a *gameAPI) ClearScores(w http.ResponseWriter, r *http.Request) {
+	defer a.doRecover(w)
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	a.marshalAndSend(true, a.storage.ClearScores(), w)
 }
 
 func (a *gameAPI) CreateP2P(w http.ResponseWriter, r *http.Request) {

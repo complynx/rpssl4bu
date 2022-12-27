@@ -19,39 +19,39 @@ type pair struct {
 
 var victoryMap = map[pair]bool{
 	// against rock
-	{0, 0}: false,
-	{1, 0}: true,
-	{2, 0}: false,
-	{3, 0}: false,
-	{4, 0}: true,
+	{types.Rock, types.Rock}:     false,
+	{types.Paper, types.Rock}:    true,
+	{types.Scissors, types.Rock}: false,
+	{types.Lizard, types.Rock}:   false,
+	{types.Spock, types.Rock}:    true,
 
 	// against paper
-	{0, 1}: false,
-	{1, 1}: false,
-	{2, 1}: true,
-	{3, 1}: true,
-	{4, 1}: false,
+	{types.Rock, types.Paper}:     false,
+	{types.Paper, types.Paper}:    false,
+	{types.Scissors, types.Paper}: true,
+	{types.Lizard, types.Paper}:   true,
+	{types.Spock, types.Paper}:    false,
 
 	// against scissors
-	{0, 2}: true,
-	{1, 2}: false,
-	{2, 2}: false,
-	{3, 2}: false,
-	{4, 2}: true,
+	{types.Rock, types.Scissors}:     true,
+	{types.Paper, types.Scissors}:    false,
+	{types.Scissors, types.Scissors}: false,
+	{types.Lizard, types.Scissors}:   false,
+	{types.Spock, types.Scissors}:    true,
 
 	// against lizard
-	{0, 3}: true,
-	{1, 3}: false,
-	{2, 3}: true,
-	{3, 3}: false,
-	{4, 3}: false,
+	{types.Rock, types.Lizard}:     true,
+	{types.Paper, types.Lizard}:    false,
+	{types.Scissors, types.Lizard}: true,
+	{types.Lizard, types.Lizard}:   false,
+	{types.Spock, types.Lizard}:    false,
 
 	// against spock
-	{0, 4}: false,
-	{1, 4}: true,
-	{2, 4}: false,
-	{3, 4}: true,
-	{4, 4}: false,
+	{types.Rock, types.Spock}:     false,
+	{types.Paper, types.Spock}:    true,
+	{types.Scissors, types.Spock}: false,
+	{types.Lizard, types.Spock}:   true,
+	{types.Spock, types.Spock}:    false,
 }
 
 // returns tie and win results for player p1 against p2
@@ -76,8 +76,8 @@ func NewGame(rng pkg.RandomProvider) pkg.Game {
 
 func (g *game) Choices(ctx context.Context) ([]types.Choice, error) {
 	ret := make([]types.Choice, 0, 5)
-	for i := 0; i < 5; i++ {
-		ret = append(ret, types.IntToChoice(i))
+	for i := types.Rock; i <= types.Spock; i++ {
+		ret = append(ret, i)
 	}
 	return ret, nil
 }
@@ -88,7 +88,7 @@ func (g *game) Choice(ctx context.Context) (types.Choice, error) {
 		return types.Lizard, fmt.Errorf("generate random number: %w", err)
 	}
 
-	return types.IntToChoiceErr(num % 5)
+	return types.IntToChoiceErr((num % 5) + 1)
 }
 
 func (g *game) Play(ctx context.Context, player types.Choice) (types.Result, types.Choice, error) {

@@ -57,15 +57,15 @@ func TestChoices(t *testing.T) {
 			request:        httptest.NewRequest(http.MethodGet, "/choices", nil),
 			requestChoices: []types.Choice{types.Lizard, types.Paper},
 			expectedStatus: http.StatusOK,
-			expectedBody:   []byte(`[{"id":3,"name":"lizard"},{"id":1,"name":"paper"}]`),
-			expectedLogs:   []string{},
+			expectedBody:   []byte(`[{"id":4,"name":"lizard"},{"id":2,"name":"paper"}]`),
+			expectedLogs:   []string{"sending Choices"},
 		},
 		{
 			name:           "Choices error",
 			game:           mocks.NewGame(t),
 			request:        httptest.NewRequest(http.MethodGet, "/choices", nil),
 			expectedStatus: http.StatusInternalServerError,
-			expectedLogs:   []string{"Error during request processing"},
+			expectedLogs:   []string{"sending Choices", "Error during request processing"},
 			expectedErr:    errors.New("Error getting choices"),
 		},
 		// ...
@@ -77,7 +77,7 @@ func TestChoices(t *testing.T) {
 			observedZapCore, observedLogs := observer.New(zap.InfoLevel)
 			observedLogger := zap.New(observedZapCore)
 			// Create gameAPI instance
-			api := NewGameAPI(tc.game, nil, observedLogger)
+			api := NewGameAPI(tc.game, nil, nil, observedLogger)
 
 			// Test
 			w := httptest.NewRecorder()
@@ -91,15 +91,9 @@ func TestChoices(t *testing.T) {
 			}
 			// Assert logs
 			logs := observedLogs.All()
-			for _, log := range tc.expectedLogs {
-				found := false
-				for _, entry := range logs {
-					if strings.Contains(entry.Message, log) {
-						found = true
-						break
-					}
-				}
-				assert.True(t, found, "Log message not found: "+log)
+			assert.Equal(t, len(tc.expectedLogs), len(logs))
+			for i := range tc.expectedLogs {
+				assert.Equal(t, tc.expectedLogs[i], logs[i].Message)
 			}
 
 			// Assert mock expectations
@@ -124,8 +118,8 @@ func TestChoice(t *testing.T) {
 			game:           mocks.NewGame(t),
 			request:        httptest.NewRequest(http.MethodGet, "/choice", nil),
 			expectedStatus: http.StatusOK,
-			expectedBody:   []byte(`{"id":0,"name":"rock"}`),
-			expectedLogs:   []string{},
+			expectedBody:   []byte(`{"id":1,"name":"rock"}`),
+			expectedLogs:   []string{"randomly chosen choice"},
 			expectedErr:    nil,
 		},
 		{
@@ -146,7 +140,7 @@ func TestChoice(t *testing.T) {
 			observedZapCore, observedLogs := observer.New(zap.InfoLevel)
 			observedLogger := zap.New(observedZapCore)
 			// Create gameAPI instance
-			api := NewGameAPI(tc.game, nil, observedLogger)
+			api := NewGameAPI(tc.game, nil, nil, observedLogger)
 
 			// Test
 			w := httptest.NewRecorder()
@@ -160,19 +154,140 @@ func TestChoice(t *testing.T) {
 			}
 			// Assert logs
 			logs := observedLogs.All()
-			for _, log := range tc.expectedLogs {
-				found := false
-				for _, entry := range logs {
-					if strings.Contains(entry.Message, log) {
-						found = true
-						break
-					}
-				}
-				assert.True(t, found, "Log message not found: "+log)
+			assert.Equal(t, len(tc.expectedLogs), len(logs))
+			for i := range tc.expectedLogs {
+				assert.Equal(t, tc.expectedLogs[i], logs[i].Message)
 			}
 
 			// Assert mock expectations
 			tc.game.AssertExpectations(t)
+		})
+	}
+}
+
+func TestGetScores(t *testing.T) {
+	// Test cases
+	testCases := []struct {
+		name           string
+		request        *http.Request
+		expectedStatus int
+		expectedBody   []byte
+		expectedLogs   []string
+		expectedErr    error
+	}{
+		{
+			name:           "success",
+			request:        httptest.NewRequest(http.MethodGet, "/get_scores", nil),
+			expectedStatus: http.StatusOK,
+			expectedBody:   []byte(`["win","tie"]`),
+			expectedLogs:   []string{},
+			expectedErr:    nil,
+		},
+		{
+			name:           "error",
+			request:        httptest.NewRequest(http.MethodGet, "/get_scores", nil),
+			expectedStatus: http.StatusInternalServerError,
+			expectedBody:   nil,
+			expectedLogs:   []string{"Error during request processing"},
+			expectedErr:    errors.New("Error getting choice"),
+		},
+		// ...
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Setup
+			observedZapCore, observedLogs := observer.New(zap.InfoLevel)
+			observedLogger := zap.New(observedZapCore)
+			storage := mocks.NewStorage(t)
+			defer storage.AssertExpectations(t)
+			// Create gameAPI instance
+			api := NewGameAPI(nil, nil, storage, observedLogger)
+
+			// Test
+			w := httptest.NewRecorder()
+			r := storage.EXPECT().GetLastScores().Times(1)
+			if tc.name == "success" {
+				r.Return([]types.Result{types.Win, types.Tie}, nil)
+			} else {
+				r.Return(nil, errors.New("test"))
+			}
+			api.GetScores(w, tc.request)
+
+			// Assert
+			assert.Equal(t, tc.expectedStatus, w.Code, "Wrong status code")
+			if tc.expectedBody != nil {
+				assert.Equal(t, tc.expectedBody, w.Body.Bytes(), "Wrong response body")
+			}
+			// Assert logs
+			logs := observedLogs.All()
+			assert.Equal(t, len(tc.expectedLogs), len(logs))
+			for i := range tc.expectedLogs {
+				assert.Equal(t, tc.expectedLogs[i], logs[i].Message)
+			}
+		})
+	}
+}
+func TestClearScores(t *testing.T) {
+	// Test cases
+	testCases := []struct {
+		name           string
+		request        *http.Request
+		expectedStatus int
+		expectedBody   []byte
+		expectedLogs   []string
+		expectedErr    error
+	}{
+		{
+			name:           "success",
+			request:        httptest.NewRequest(http.MethodPost, "/clear_scores", nil),
+			expectedStatus: http.StatusOK,
+			expectedBody:   []byte(`true`),
+			expectedLogs:   []string{},
+			expectedErr:    nil,
+		},
+		{
+			name:           "error",
+			request:        httptest.NewRequest(http.MethodPost, "/clear_scores", nil),
+			expectedStatus: http.StatusInternalServerError,
+			expectedBody:   nil,
+			expectedLogs:   []string{"Error during request processing"},
+			expectedErr:    errors.New("Error getting choice"),
+		},
+		// ...
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Setup
+			observedZapCore, observedLogs := observer.New(zap.InfoLevel)
+			observedLogger := zap.New(observedZapCore)
+			storage := mocks.NewStorage(t)
+			defer storage.AssertExpectations(t)
+			// Create gameAPI instance
+			api := NewGameAPI(nil, nil, storage, observedLogger)
+
+			// Test
+			w := httptest.NewRecorder()
+			r := storage.EXPECT().ClearScores().Times(1)
+			if tc.name == "success" {
+				r.Return(nil)
+			} else {
+				r.Return(errors.New("test"))
+			}
+			api.ClearScores(w, tc.request)
+
+			// Assert
+			assert.Equal(t, tc.expectedStatus, w.Code, "Wrong status code")
+			if tc.expectedBody != nil {
+				assert.Equal(t, tc.expectedBody, w.Body.Bytes(), "Wrong response body")
+			}
+			// Assert logs
+			logs := observedLogs.All()
+			assert.Equal(t, len(tc.expectedLogs), len(logs))
+			for i := range tc.expectedLogs {
+				assert.Equal(t, tc.expectedLogs[i], logs[i].Message)
+			}
 		})
 	}
 }
@@ -189,17 +304,25 @@ func TestPlay(t *testing.T) {
 		expectedErr    error
 	}{
 		{
-			name:           "Play success",
+			name:           "success",
 			game:           mocks.NewGame(t),
-			request:        httptest.NewRequest(http.MethodPost, "/play", strings.NewReader("{\"player\":3}")),
+			request:        httptest.NewRequest(http.MethodPost, "/play", strings.NewReader("{\"player\":4}")),
 			expectedStatus: http.StatusOK,
-			expectedBody:   []byte(`{"results":"win","player":3,"computer":3}`),
-			expectedLogs:   []string{},
+			expectedBody:   []byte(`{"results":"win","player":4,"computer":4}`),
+			expectedLogs:   []string{"game with computer"},
 		},
 		{
-			name:           "Play error",
+			name:           "score fail",
 			game:           mocks.NewGame(t),
-			request:        httptest.NewRequest(http.MethodPost, "/play", strings.NewReader("{\"player\":3}")),
+			request:        httptest.NewRequest(http.MethodPost, "/play", strings.NewReader("{\"player\":4}")),
+			expectedStatus: http.StatusOK,
+			expectedBody:   []byte(`{"results":"win","player":4,"computer":4}`),
+			expectedLogs:   []string{"Failed to save last score", "game with computer"},
+		},
+		{
+			name:           "error",
+			game:           mocks.NewGame(t),
+			request:        httptest.NewRequest(http.MethodPost, "/play", strings.NewReader("{\"player\":4}")),
 			expectedStatus: http.StatusInternalServerError,
 			expectedLogs:   []string{"Error during request processing"},
 			expectedErr:    errors.New("Error getting play"),
@@ -212,16 +335,22 @@ func TestPlay(t *testing.T) {
 			// Setup
 			observedZapCore, observedLogs := observer.New(zap.InfoLevel)
 			observedLogger := zap.New(observedZapCore)
+			storage := mocks.NewStorage(t)
+			defer storage.AssertExpectations(t)
+
 			// Create gameAPI instance
-			api := NewGameAPI(tc.game, nil, observedLogger)
+			api := NewGameAPI(tc.game, nil, storage, observedLogger)
 
 			// Test
 			w := httptest.NewRecorder()
-			if tc.expectedBody != nil {
+			if tc.name == "success" {
 				tc.game.On("Play", mock.Anything, types.Lizard).Return(types.Win, types.Lizard, tc.expectedErr)
+				storage.EXPECT().SetLastScore(types.Win).Times(1).Return(nil)
+			} else if tc.name == "score fail" {
+				tc.game.On("Play", mock.Anything, types.Lizard).Return(types.Win, types.Lizard, tc.expectedErr)
+				storage.EXPECT().SetLastScore(types.Win).Times(1).Return(errors.New("test"))
 			} else {
 				tc.game.On("Play", mock.Anything, types.Lizard).Return(types.Tie, types.Lizard, tc.expectedErr)
-
 			}
 			api.Play(w, tc.request)
 
@@ -232,15 +361,9 @@ func TestPlay(t *testing.T) {
 			}
 			// Assert logs
 			logs := observedLogs.All()
-			for _, log := range tc.expectedLogs {
-				found := false
-				for _, entry := range logs {
-					if strings.Contains(entry.Message, log) {
-						found = true
-						break
-					}
-				}
-				assert.True(t, found, "Log message not found: "+log)
+			assert.Equal(t, len(tc.expectedLogs), len(logs))
+			for i := range tc.expectedLogs {
+				assert.Equal(t, tc.expectedLogs[i], logs[i].Message)
 			}
 
 			// Assert mock expectations
@@ -275,6 +398,18 @@ func TestMethods(t *testing.T) {
 			request:        httptest.NewRequest(http.MethodPost, "/choices", nil),
 			expectedStatus: http.StatusMethodNotAllowed,
 		},
+		{
+			name:           "GetScores",
+			game:           mocks.NewGame(t),
+			request:        httptest.NewRequest(http.MethodPost, "/get_scores", nil),
+			expectedStatus: http.StatusMethodNotAllowed,
+		},
+		{
+			name:           "ClearScores",
+			game:           mocks.NewGame(t),
+			request:        httptest.NewRequest(http.MethodGet, "/clear_scores", nil),
+			expectedStatus: http.StatusMethodNotAllowed,
+		},
 		// ...
 	}
 
@@ -284,7 +419,7 @@ func TestMethods(t *testing.T) {
 			observedZapCore, observedLogs := observer.New(zap.InfoLevel)
 			observedLogger := zap.New(observedZapCore)
 			// Create gameAPI instance
-			api := NewGameAPI(tc.game, nil, observedLogger)
+			api := NewGameAPI(tc.game, nil, nil, observedLogger)
 
 			// Test
 			w := httptest.NewRecorder()
@@ -295,6 +430,10 @@ func TestMethods(t *testing.T) {
 				api.Choice(w, tc.request)
 			case "/play":
 				api.Play(w, tc.request)
+			case "/get_scores":
+				api.GetScores(w, tc.request)
+			case "/clear_scores":
+				api.ClearScores(w, tc.request)
 			}
 
 			// Assert
@@ -313,7 +452,7 @@ func TestGameAPI_Play_BadRequest(t *testing.T) {
 	observedZapCore, observedLogs := observer.New(zap.InfoLevel)
 	observedLogger := zap.New(observedZapCore)
 	game := mocks.NewGame(t)
-	api := NewGameAPI(game, nil, observedLogger)
+	api := NewGameAPI(game, nil, nil, observedLogger)
 
 	// Test
 	request, err := http.NewRequest(http.MethodPost, "/play", strings.NewReader("{invalid json}"))

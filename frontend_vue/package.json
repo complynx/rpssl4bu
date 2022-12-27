@@ -8,8 +8,12 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "axios": "^1.2.1",
     "core-js": "^3.8.3",
-    "vue": "^3.2.13"
+    "vue": "^3.2.13",
+    "vue-burger-menu": "^2.0.5",
+    "vue-sidebar-menu": "^5.2.5",
+    "vue-universal-modal": "^1.1.4"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

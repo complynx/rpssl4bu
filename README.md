@@ -2,12 +2,14 @@
 
 Task of RPSSL service for Billups
 
-# About
+# Backend
+
+## About
 
 This server is for playing game of Rock, Paper, Scissors, Lizard, Spock.
 The server can also use an external supply of random numbers.
 
-# Running
+## Running
 
 First change directory to `./backend`.
 
@@ -23,7 +25,7 @@ You can provide arguments:
 
 You can combine these parameters as needed.
 
-# Docker run
+## Docker run
 
 First change directory to `./backend`.
 
@@ -33,3 +35,45 @@ First change directory to `./backend`.
 or just `docker run rpssl4bu` to use internal RNG
 
 8080 is exposed
+
+# Frontend
+
+Based on Vue.JS 3.
+
+## Project setup, run
+
+First change directory to `./frontend_vue`.
+
+Use NPM for running.
+
+```
+npm install
+
+# dev
+npm run serve
+
+# prod
+npm run build
+```
+
+## Docker run
+
+First change directory to `./frontend_vue`.
+
+1. `docker build -t rpssl4bu_vue .`
+2. `docker run rpssl4bu_vue`
+
+80 is exposed
+
+# Both together
+
+There's a docker-compose setup to run both at the same time.
+Port 80 is exposed.
+
+# Additional things
+
+## Optional tasks
+
+1. P2P is partially implemented, wait for full release. No frontend, some backend code missing.
+2. Result board is only working for this server.
+3. Some design features missing.

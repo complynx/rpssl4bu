@@ -13,11 +13,9 @@
     <div class="game">
       <div class="player player-left">
         <h1>You</h1>
-        <template v-if="yourChoiceId != 0">
-          <div class="weapon" :class="'weapon-'+yourChoiceId">
-            {{ yourChoice }}
-          </div>
-        </template>
+        <div v-if="yourChoiceId != 0" class="weapon" :class="'weapon-'+yourChoiceId">
+          {{ yourChoice }}
+        </div>
       </div>
       <div class="weapons">
         <h1>Choose your weapon</h1>
@@ -29,11 +27,9 @@
       </div>
       <div class="player player-right">
         <h1>Computer</h1>
-        <template v-if="computerChoiceId != 0">
-          <div class="weapon" :class="'weapon-'+computerChoiceId">
-            {{ computerChoice }}
-          </div>
-        </template>
+        <div v-if="computerChoiceId != 0" class="weapon" :class="'weapon-'+computerChoiceId">
+          {{ computerChoice }}
+        </div>
       </div>
     </div>
     <div class="board">
@@ -219,6 +215,11 @@ export default {
           return {
             img: "spock_rock.png",
             text: "All the rocks are belong to us."
+          };
+        case 'lizard_scissors':
+          return {
+            img: "sl.png",
+            text: "Never cut the wrong side of the lizard."
           };
       }
       return null;

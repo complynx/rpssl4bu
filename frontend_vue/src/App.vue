@@ -11,8 +11,13 @@
   </nav>
   <main>
     <div class="game">
-      <div class="player">
-        <!-- Add content for the player section here -->
+      <div class="player player-left">
+        <h1>You</h1>
+        <template v-if="yourChoiceId != 0">
+          <div class="weapon" :class="'weapon-'+yourChoiceId">
+            {{ yourChoice }}
+          </div>
+        </template>
       </div>
       <div class="weapons">
         <h1>Choose your weapon</h1>
@@ -22,8 +27,13 @@
           </button>
         </div>
       </div>
-      <div class="computer">
-        <!-- Add content for the computer section here -->
+      <div class="player player-right">
+        <h1>Computer</h1>
+        <template v-if="computerChoiceId != 0">
+          <div class="weapon" :class="'weapon-'+computerChoiceId">
+            {{ computerChoice }}
+          </div>
+        </template>
       </div>
     </div>
     <div class="board">
@@ -45,38 +55,24 @@
   >
     <div class="modal result">
       <template v-if="result === 'win'">
-          <h1>You win!</h1>
-          <div class="content">
-            <div>Computer chose {{computerChoice}}</div>
-            <div>You chose {{yourChoice}}</div>
-            <template v-if="resultRepresentation !== null">
-              <div>{{resultRepresentation.text}}</div>
-              <img :src="'./images/'+resultRepresentation.img" />
-            </template>
-          </div>
+        <h1>You win!</h1>
       </template>
       <template v-if="result === 'lose'">
-          <h1>You've lost</h1>
-          <div class="content">
-            <div>Computer chose {{computerChoice}}</div>
-            <div>You chose {{yourChoice}}</div>
-            <template v-if="resultRepresentation !== null">
-              <div>{{resultRepresentation.text}}</div>
-              <img :src="'./images/'+resultRepresentation.img" />
-            </template>
-          </div>
+        <h1>You've lost</h1>
       </template>
       <template v-if="result === 'tie'">
-          <h1>It's a tie</h1>
-          <div class="content">
-            <div>Computer chose {{computerChoice}}</div>
-            <div>You chose {{yourChoice}}</div>
-            <template v-if="resultRepresentation !== null">
-              <div>{{resultRepresentation.text}}</div>
-              <img :src="'./images/'+resultRepresentation.img" />
-            </template>
-          </div>
+        <h1>It's a tie</h1>
       </template>
+      <div class="content">
+        <template v-if="resultRepresentation === null">
+          <div>Computer chose {{computerChoice}}</div>
+          <div>You chose {{yourChoice}}</div>
+        </template>
+        <template v-if="resultRepresentation !== null">
+          <div>{{resultRepresentation.text}}</div>
+          <img :src="'./images/'+resultRepresentation.img" />
+        </template>
+      </div>
     </div>
   </Modal>
   <Modal
@@ -116,6 +112,8 @@ export default {
       isShowResult: false,
       computerChoice: '',
       yourChoice: '',
+      computerChoiceId: 0,
+      yourChoiceId: 0,
       result: '',
       resultRepresentation: null,
       scores: [],
@@ -266,8 +264,8 @@ export default {
         const response = await axios.post(this.backendServer + 'play', { player: id });
         this.showResult(
           response.data.results,
-          this.weaponDict[response.data.computer].name,
-          this.weaponDict[response.data.player].name
+          this.weaponDict[response.data.computer],
+          this.weaponDict[response.data.player]
         );
       } catch (error) {
         console.error(error);
@@ -275,9 +273,11 @@ export default {
     },
     showResult(result, playerChoice, computerChoice) {
       this.result = result;
-      this.computerChoice = playerChoice;
-      this.yourChoice = computerChoice;
-      this.resultRepresentation = this.getResultRepresentation(playerChoice, computerChoice);
+      this.computerChoice = playerChoice.name;
+      this.yourChoice = computerChoice.name;
+      this.computerChoiceId = playerChoice.id;
+      this.yourChoiceId = computerChoice.id;
+      this.resultRepresentation = this.getResultRepresentation(playerChoice.name, computerChoice.name);
       console.log(this.resultRepresentation);
       this.isShowResult = true;
       this.fetchScores();
@@ -321,6 +321,15 @@ input {
   border-radius: .6em;
   max-height:98vh;
   max-width:98vw;
+}
+
+.player {
+  text-align: center;
+}
+.player>h1 {
+  font-size: 1.6em;
+  margin:0;
+  height: 1.3em;
 }
 .backend-server{
   min-width: 32em;
@@ -378,14 +387,14 @@ input {
 .result img {
   max-height: 80vh;
 }
-.weapon {
+.weapons .weapon {
   --translator-radial: -75%;
   --translator-base-x: -50%;
   --translator-base-y: -50%;
   --rotor-1: 45deg;
   --rotor-1-back:calc(var(--rotor-1)*-1);
   color:transparent;
-  background: none;
+  background-color: transparent;
   border: 0 none transparent;
   width: var(--weapon-size);
   height: var(--weapon-size);
@@ -394,7 +403,7 @@ input {
   left: 50%;
   background-size: cover;
 }
-.weapon:hover{
+.weapons .weapon:hover{
   filter: contrast(170%);
 }
 .weapons>h1{
@@ -506,24 +515,34 @@ main {
 
 
 
-.weapon-1 {
+.weapons .weapon-1 {
   transform:translate(var(--translator-base-x), var(--translator-base-y)) rotate(var(--rotor-1)) rotate(0deg) translate(var(--translator-radial), var(--translator-radial))  rotate(-0deg) rotate(var(--rotor-1-back));
+}
+.weapons .weapon-2 {
+  transform:translate(var(--translator-base-x), var(--translator-base-y)) rotate(var(--rotor-1)) rotate(72deg) translate(var(--translator-radial), var(--translator-radial)) rotate(-72deg) rotate(var(--rotor-1-back));
+}
+.weapons .weapon-3 {
+  transform:translate(var(--translator-base-x), var(--translator-base-y)) rotate(var(--rotor-1)) rotate(144deg) translate(var(--translator-radial), var(--translator-radial)) rotate(-144deg) rotate(var(--rotor-1-back));
+}
+.weapons .weapon-4 {
+  transform:translate(var(--translator-base-x), var(--translator-base-y)) rotate(var(--rotor-1)) rotate(216deg) translate(var(--translator-radial), var(--translator-radial)) rotate(-216deg) rotate(var(--rotor-1-back));
+}
+.weapons .weapon-5 {
+  transform:translate(var(--translator-base-x), var(--translator-base-y)) rotate(var(--rotor-1)) rotate(288deg) translate(var(--translator-radial), var(--translator-radial)) rotate(-288deg) rotate(var(--rotor-1-back));
+}
+.weapon-1 {
   background-image: url(./images/rock.png);
 }
 .weapon-2 {
-  transform:translate(var(--translator-base-x), var(--translator-base-y)) rotate(var(--rotor-1)) rotate(72deg) translate(var(--translator-radial), var(--translator-radial)) rotate(-72deg) rotate(var(--rotor-1-back));
   background-image: url(./images/paper.png);
 }
 .weapon-3 {
-  transform:translate(var(--translator-base-x), var(--translator-base-y)) rotate(var(--rotor-1)) rotate(144deg) translate(var(--translator-radial), var(--translator-radial)) rotate(-144deg) rotate(var(--rotor-1-back));
   background-image: url(./images/scissors.png);
 }
 .weapon-4 {
-  transform:translate(var(--translator-base-x), var(--translator-base-y)) rotate(var(--rotor-1)) rotate(216deg) translate(var(--translator-radial), var(--translator-radial)) rotate(-216deg) rotate(var(--rotor-1-back));
   background-image: url(./images/lizard.png);
 }
 .weapon-5 {
-  transform:translate(var(--translator-base-x), var(--translator-base-y)) rotate(var(--rotor-1)) rotate(288deg) translate(var(--translator-radial), var(--translator-radial)) rotate(-288deg) rotate(var(--rotor-1-back));
   background-image: url(./images/spock.png);
 }
 </style>

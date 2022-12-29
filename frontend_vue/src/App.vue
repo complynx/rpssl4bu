@@ -278,6 +278,8 @@ export default {
     },
     async makeChoice(id) {
       try {
+        this.computerChoiceId = 0;
+        this.computerChoice = '';
         const response = await axios.post(this.backendServer + 'play', { player: id });
         this.showResult(
           response.data.results,

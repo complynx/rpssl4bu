@@ -75,5 +75,5 @@ Port 80 is exposed.
 ## Optional tasks
 
 1. P2P is partially implemented, wait for full release. No frontend, some backend code missing.
-2. Result board is only working for this server.
+2. Global result board is only working for this server.
 3. Some design features missing.

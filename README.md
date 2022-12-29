@@ -1,6 +1,7 @@
 # rpssl4bu
 
-Task of RPSSL service for Billups
+Task of RPSSL service for Billups.
+Main focus is on backend, frontend is just for fun.
 
 # Backend
 

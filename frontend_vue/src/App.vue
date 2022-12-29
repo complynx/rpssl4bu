@@ -54,15 +54,9 @@
     :close="closeResultModal"
   >
     <div class="modal result">
-      <template v-if="result === 'win'">
-        <h1>You win!</h1>
-      </template>
-      <template v-if="result === 'lose'">
-        <h1>You've lost</h1>
-      </template>
-      <template v-if="result === 'tie'">
-        <h1>It's a tie</h1>
-      </template>
+      <h1 v-if="result === 'win'">You win!</h1>
+      <h1 v-if="result === 'lose'">You've lost</h1>
+      <h1 v-if="result === 'tie'">It's a tie</h1>
       <div class="content">
         <template v-if="resultRepresentation === null">
           <div>Computer chose {{computerChoice}}</div>
@@ -330,6 +324,13 @@ input {
   font-size: 1.6em;
   margin:0;
   height: 1.3em;
+}
+.player .weapon {
+  margin: 1em auto;
+  color: transparent;
+  width:20vw;
+  height: 20vw;
+  background-size: cover;
 }
 .backend-server{
   min-width: 32em;

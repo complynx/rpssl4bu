@@ -208,6 +208,26 @@ export default {
             img: "spock_taxes.png",
             text: "Even for Spock filling out taxes is too much."
           };
+        case 'lizard_paper':
+          return {
+            img: "lizard_paper.png",
+            text: "A lizard ate your homework. Why teachers don't want to believe you?"
+          };
+        case 'lizard_spock':
+          return {
+            img: "spock_lizard.png",
+            text: "He didn't have time to turn around and see what was coming."
+          };
+        case 'scissors_spock':
+          return {
+            img: "laser_scissors.png",
+            text: "Molten metal is very hot and bright."
+          };
+        case 'rock_spock':
+          return {
+            img: "spock_rock.png",
+            text: "All the rocks are belong to us."
+          };
       }
       return null;
     },

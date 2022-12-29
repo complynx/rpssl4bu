@@ -5,6 +5,10 @@
         <a href="#">Play P2P</a>
       </li>
       <li>
+        <a v-if="globalResults" @click="toggleResults">Only local results</a>
+        <a v-if="!globalResults" @click="toggleResults">Global results</a>
+      </li>
+      <li>
         <a @click="openChangeBackendModal">Change backend server</a>
       </li>
     </ul>
@@ -33,11 +37,19 @@
       </div>
     </div>
     <div class="board">
-      <h1>Last scores:</h1>
+      <h1 v-if="!globalResults">Your last scores:</h1>
+      <h1 v-if="globalResults">Last global scores:</h1>
       <div class="scores">
-        <div class="score" v-for="(score, index) in scores" :key="index">
-          {{ score }}
-        </div>
+        <template v-if="globalResults">
+          <div class="score" v-for="(score, index) in scores" :key="index">
+            {{ score }}
+          </div>
+        </template>
+        <template v-if="!globalResults">
+          <div class="score" v-for="(score, index) in localScores" :key="index">
+            {{ score }}
+          </div>
+        </template>
       </div>
       <button @click="clearScores()">
         <font-awesome-icon icon="fa-solid fa-trash-can"/>
@@ -103,10 +115,12 @@ export default {
       computerChoice: '',
       yourChoice: '',
       computerChoiceId: 0,
+      globalResults: true,
       yourChoiceId: 0,
       result: '',
       resultRepresentation: null,
       scores: [],
+      localScores: [],
       weapons: [
         { id: 1, name: 'Rock' },
         { id: 2, name: 'Paper' },
@@ -225,6 +239,10 @@ export default {
       return null;
     },
     async clearScores() {
+      if(!this.globalResults) {
+        this.localScores = [];
+        return;
+      }
       try {
         await axios.post(this.backendServer + 'clear_scores');
         await this.fetchScores();
@@ -237,7 +255,11 @@ export default {
         this.weaponDict[weapon.id] = weapon;
       }
     },
+    toggleResults() {
+      this.globalResults = !this.globalResults;
+    },
     async fetchScores() {
+      if(!this.globalResults) return;
       try {
         const response = await axios.get(this.backendServer + 'get_scores');
         this.scores = response.data;
@@ -275,6 +297,8 @@ export default {
       this.resultRepresentation = this.getResultRepresentation(playerChoice.name, computerChoice.name);
       console.log(this.resultRepresentation);
       this.isShowResult = true;
+      this.localScores.unshift(result);
+      if(this.localScores.length>10) this.localScores = this.localScores.slice(0, 10);
       this.fetchScores();
     },
     closeResultModal() {

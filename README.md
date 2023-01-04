@@ -22,7 +22,8 @@ Optional tasks were done as well:
 
 This server is for playing game of Rock, Paper, Scissors, Lizard, Spock.
 The server can also use an external supply of random numbers (though this
-might slow down some functions).
+might slow down some functions). To use external provider, please provide
+necessary arguments or variables. 
 
 Some features are not covered with tests for speedup purposes, but main
 functionality is tested.
@@ -52,13 +53,21 @@ First change directory to `./backend`.
 
 or just `docker run rpssl4bu` to use internal RNG
 
-8080 is exposed
+Port 8080 is exposed by default
 
 # Frontend
 
 Based on Vue.JS 3.
 This frontend is created in one component because frontend isn't
-the main part of the task. 
+the main part of the task. No testing either.
+Some features will stop working for different backend servers.
+
+## Project preparation
+
+If you want to run together with backend in docker-compose, nothing
+needs to be done. If you want to run against different backend server
+Fix value of `backendServer` property in `./frontend_vue/src/App.vue`.
+You can also change backend server on the go later from GUI.
 
 ## Project setup, run
 
@@ -76,6 +85,8 @@ npm run serve
 npm run build
 ```
 
+Don't forget to provide proper backend server (from GUI or by fixing App.vue).
+
 ## Docker run
 
 First change directory to `./frontend_vue`.
@@ -83,15 +94,12 @@ First change directory to `./frontend_vue`.
 1. `docker build -t rpssl4bu_vue .`
 2. `docker run rpssl4bu_vue`
 
-80 is exposed
+Port 80 is exposed by default.
 
 # Both together
 
-There's a docker-compose setup to run both at the same time.
+There's a docker-compose setup to run both backend and frontend at the same time.
+To run both together, just run `docker-compose build` and `docker-compose up`.
+Frontend will be mounted in `/` and backend will be mounted in `/backend`.
+
 Port 80 is exposed.
-
-# Additional things
-
-## Optional tasks
-
-Global result board and P2P are only working for this server.

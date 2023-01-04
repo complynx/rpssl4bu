@@ -1,9 +1,12 @@
 FROM node:alpine as build-stage
+
+ARG FRONTEND_LOCATION
+
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm run build
+RUN if [ "${FRONTEND_LOCATION}" != "" ]; then npm run build -- "${FRONTEND_LOCATION}"; else npm run build; fi
 
 FROM nginx:alpine as production-stage
 COPY --from=build-stage /app/dist /usr/share/nginx/html

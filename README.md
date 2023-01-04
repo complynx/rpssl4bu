@@ -2,6 +2,19 @@
 
 Task of RPSSL service for Billups.
 Main focus is on backend, frontend is just for fun.
+Thus only main backend task was properly structured and covered with tests.
+Frontend and some optional tasks are not covered with tests.
+
+## Optional tasks
+
+Optional tasks were done as well:
+1. GUI uses Vue 3 (see below)
+2. Scoreboards are implemented for local and global scores
+3. Every scoreboard may be reset
+4. P2P is implemented using WebSockets and with separate scoreboard
+5. Multiple users can easily and separately play on the server
+6. Dockerfile-s are provided, as well as full docker-compose build
+7. Some fun things were added with the help of new technologies
 
 # Backend
 
@@ -43,6 +56,8 @@ or just `docker run rpssl4bu` to use internal RNG
 # Frontend
 
 Based on Vue.JS 3.
+This frontend is created in one component because frontend isn't
+the main part of the task. 
 
 ## Project setup, run
 

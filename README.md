@@ -94,6 +94,10 @@ First change directory to `./frontend_vue`.
 1. `docker build -t rpssl4bu_vue .`
 2. `docker run rpssl4bu_vue`
 
+There are two variable that you could use:
+1. FRONTEND_LOCATION — final location of the ./ for vue to build from
+2. BACKEND_URL — location of the backend (sets up default `backendServer`)
+
 Port 80 is exposed by default.
 
 # Both together

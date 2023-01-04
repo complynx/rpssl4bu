@@ -192,7 +192,7 @@ export default {
   },
   data() {
     return {
-      backendServer: '/backend/', // prod
+      backendServer: process.env.VUE_APP_BACKEND_URL || '/backend/', // prod
       // backendServer: 'http://localhost:80/backend/', // for easy testing
       // backendServer: 'https://codechallenge.boohma.com/',
       isShowChangeBackendServer: false,

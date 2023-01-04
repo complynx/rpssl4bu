@@ -12,6 +12,7 @@ import (
 	"github.com/complynx/rpssl4bu/backend/pkg"
 	gameapi "github.com/complynx/rpssl4bu/backend/pkg/GameAPI"
 	"github.com/complynx/rpssl4bu/backend/pkg/game"
+	p2pgame "github.com/complynx/rpssl4bu/backend/pkg/p2p_game"
 	"github.com/complynx/rpssl4bu/backend/pkg/random"
 	"github.com/complynx/rpssl4bu/backend/pkg/server"
 	"github.com/complynx/rpssl4bu/backend/pkg/storage"
@@ -72,8 +73,10 @@ func main() {
 
 	storage := storage.NewSimple(10)
 
+	p2pfactory := p2pgame.NewGameFactory(rng, logger.Named("P2P"))
+
 	// Create API
-	api := gameapi.NewGameAPI(gameEngine, nil, storage, logger.Named("GameAPI"))
+	api := gameapi.NewGameAPI(gameEngine, p2pfactory, storage, logger.Named("GameAPI"))
 
 	if addr == nil {
 		addr = &defaultAddr

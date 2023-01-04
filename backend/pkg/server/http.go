@@ -47,6 +47,9 @@ func setupRouter(api pkg.GameAPI, log *zap.Logger) *chi.Mux {
 	httpRouter.HandleFunc("/play", api.Play)
 	httpRouter.HandleFunc("/get_scores", api.GetScores)
 	httpRouter.HandleFunc("/clear_scores", api.ClearScores)
+	httpRouter.HandleFunc("/create_p2p", api.CreateP2P)
+	httpRouter.HandleFunc("/connect_p2p", api.ConnectP2P)
+	httpRouter.HandleFunc("/find_p2p", api.FindP2PGame)
 
 	return httpRouter
 }

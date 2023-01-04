@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	context "context"
+
 	mock "github.com/stretchr/testify/mock"
 
 	types "github.com/complynx/rpssl4bu/backend/pkg/types"
@@ -135,6 +137,43 @@ func (_c *P2PGame_GetID_Call) Run(run func()) *P2PGame_GetID_Call {
 }
 
 func (_c *P2PGame_GetID_Call) Return(_a0 types.GameID) *P2PGame_GetID_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+// IsFull provides a mock function with given fields: ctx
+func (_m *P2PGame) IsFull(ctx context.Context) bool {
+	ret := _m.Called(ctx)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(context.Context) bool); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
+// P2PGame_IsFull_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IsFull'
+type P2PGame_IsFull_Call struct {
+	*mock.Call
+}
+
+// IsFull is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *P2PGame_Expecter) IsFull(ctx interface{}) *P2PGame_IsFull_Call {
+	return &P2PGame_IsFull_Call{Call: _e.mock.On("IsFull", ctx)}
+}
+
+func (_c *P2PGame_IsFull_Call) Run(run func(ctx context.Context)) *P2PGame_IsFull_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *P2PGame_IsFull_Call) Return(_a0 bool) *P2PGame_IsFull_Call {
 	_c.Call.Return(_a0)
 	return _c
 }

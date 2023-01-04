@@ -20,7 +20,7 @@ type gameAPI struct {
 }
 
 func NewGameAPI(game pkg.Game, p2pFactory pkg.P2PGameFactory, storage pkg.Storage, log *zap.Logger) pkg.GameAPI {
-	return &gameAPI{
+	api := &gameAPI{
 		log:        log,
 		game:       game,
 		p2pFactory: p2pFactory,
@@ -30,13 +30,18 @@ func NewGameAPI(game pkg.Game, p2pFactory pkg.P2PGameFactory, storage pkg.Storag
 		},
 		storage: storage,
 	}
+	api.upgrader.CheckOrigin = func(r *http.Request) bool {
+		return true
+	}
+	api.upgrader.Subprotocols = []string{
+		"p2p",
+	}
+	return api
 }
 
 func (a *gameAPI) doRecover(w http.ResponseWriter) {
 	if r := recover(); r != nil {
-		buf := make([]byte, 1<<16)
-		stackSize := runtime.Stack(buf, false)
-		a.log.Error("Panic in api call", zap.Any("panic", r), zap.Any("stack_trace", buf[:stackSize]))
+		a.log.Error("Panic in api call", zap.Any("panic", r))
 		httpCode(w, http.StatusInternalServerError)
 	}
 }
@@ -193,6 +198,37 @@ func sideString(isRight bool) string {
 	return "left"
 }
 
+type foundGameResponse struct {
+	IsFull bool `json:"is_full"`
+}
+
+func (a *gameAPI) FindP2PGame(w http.ResponseWriter, r *http.Request) {
+	defer a.doRecover(w)
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	id, err := types.GameIDFromString(r.URL.Query().Get("g"))
+	if err != nil {
+		httpCode(w, http.StatusBadRequest)
+		return
+	}
+
+	game, found := a.p2pFactory.GetGame(id)
+	if !found {
+		httpCode(w, http.StatusNotFound)
+		return
+	}
+
+	isFull := game.IsFull(r.Context())
+
+	a.marshalAndSend(foundGameResponse{
+		IsFull: isFull,
+	}, err, w)
+}
+
 func (a *gameAPI) ConnectP2P(w http.ResponseWriter, r *http.Request) {
 	defer a.doRecover(w)
 
@@ -240,6 +276,7 @@ type messageToUser struct {
 }
 
 func (a *gameAPI) messageWriter(conn *websocket.Conn, side bool, log *zap.Logger, ch <-chan types.Message) {
+	defer log.Info("stopped message writer")
 	defer func() {
 		if r := recover(); r != nil {
 			buf := make([]byte, 1<<16)
@@ -254,9 +291,7 @@ func (a *gameAPI) messageWriter(conn *websocket.Conn, side bool, log *zap.Logger
 		if !ok {
 			return
 		}
-		if side {
-			msg.Result = msg.Result.Swap()
-		}
+
 		msgToUser := messageToUser{
 			State: msg,
 			Side:  sideString(side),
@@ -270,10 +305,12 @@ func (a *gameAPI) messageWriter(conn *websocket.Conn, side bool, log *zap.Logger
 		if err != nil {
 			log.Error("Error while sending message", zap.Error(err))
 		}
+		log.Info("sent message to user", zap.Any("message", msgToUser))
 	}
 }
 
 func (a *gameAPI) messageReader(conn *websocket.Conn, game pkg.P2PGame, side bool, log *zap.Logger) {
+	defer log.Info("stopped message reader")
 	for {
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
@@ -285,6 +322,7 @@ func (a *gameAPI) messageReader(conn *websocket.Conn, game pkg.P2PGame, side boo
 			log.Error("Error while unmarshalling message", zap.Error(err))
 			continue
 		}
+		log.Info("message from user", zap.Any("incoming_message", message))
 		game.Choice(message.Choice, side)
 	}
 }

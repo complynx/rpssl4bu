@@ -1,7 +1,9 @@
 package types
 
 type Message struct {
-	P1     string `json:"left_player_name"`
-	P2     string `json:"right_player_name"`
-	Result Result `json:"result"`
+	LeftPlayerName    string `json:"left_player_name"`
+	RightPlayerName   string `json:"right_player_name"`
+	LeftPlayerChoice  Choice `json:"left_player_choice"`
+	RightPlayerChoice Choice `json:"right_player_choice"`
+	Result            Result `json:"result"`
 }

@@ -1,10 +1,16 @@
 <template>
   <nav>
     <ul>
-      <li>
-        <a href="#">Play P2P</a>
+      <li v-if="!p2pMode">
+        <a @click="isShowStartP2P=true">Play P2P</a>
       </li>
-      <li>
+      <li v-if="p2pMode">
+        <a @click="copyInviteLinkToClipboard">Copy invitation link</a>
+      </li>
+      <li v-if="p2pMode">
+        <a @click="cancelP2P">Exit P2P mode</a>
+      </li>
+      <li v-if="!p2pMode">
         <a v-if="globalResults" @click="toggleResults">Only local results</a>
         <a v-if="!globalResults" @click="toggleResults">Global results</a>
       </li>
@@ -16,10 +22,22 @@
   <main>
     <div class="game">
       <div class="player player-left">
-        <h1>You</h1>
-        <div v-if="yourChoiceId != 0" class="weapon" :class="'weapon-'+yourChoiceId">
-          {{ yourChoice }}
-        </div>
+        <h1 v-if="!p2pMode">You</h1>
+        <h1 v-if="p2pMode">
+          {{ leftPlayerName }}
+          <span v-if="leftPlayerName == ''" class="waiting-player">waiting...</span>
+          <span v-if="!yourSideIsRight" class="player-you-mark"> (you)</span>
+        </h1>
+        <template v-if="p2pMode">
+          <div v-if="leftPlayerChoiceID != 0" class="weapon" :class="'weapon-'+leftPlayerChoiceID">
+            {{ leftPlayerChoice }}
+          </div>
+        </template>
+        <template v-if="!p2pMode">
+          <div v-if="yourChoiceId != 0" class="weapon" :class="'weapon-'+yourChoiceId">
+            {{ yourChoice }}
+          </div>
+        </template>
       </div>
       <div class="weapons">
         <h1>Choose your weapon</h1>
@@ -30,23 +48,40 @@
         </div>
       </div>
       <div class="player player-right">
-        <h1>Computer</h1>
-        <div v-if="computerChoiceId != 0" class="weapon" :class="'weapon-'+computerChoiceId">
-          {{ computerChoice }}
-        </div>
+        <h1 v-if="!p2pMode">Computer</h1>
+        <h1 v-if="p2pMode">
+          {{ rightPlayerName }}
+          <span v-if="rightPlayerName == ''" class="waiting-player">waiting...</span>
+          <span v-if="yourSideIsRight" class="player-you-mark"> (you)</span>
+        </h1>
+        <template v-if="p2pMode">
+          <div v-if="rightPlayerChoiceID != 0" class="weapon" :class="'weapon-'+rightPlayerChoiceID">
+            {{ rightPlayerChoice }}
+          </div>
+        </template>
+        <template v-if="!p2pMode">
+          <div v-if="computerChoiceId != 0" class="weapon" :class="'weapon-'+computerChoiceId">
+            {{ computerChoice }}
+          </div>
+        </template>
       </div>
     </div>
     <div class="board">
-      <h1 v-if="!globalResults">Your last scores:</h1>
-      <h1 v-if="globalResults">Last global scores:</h1>
+      <h1 v-if="!globalResults || p2pMode">Your last scores:</h1>
+      <h1 v-if="globalResults && !p2pMode">Last global scores:</h1>
       <div class="scores">
-        <template v-if="globalResults">
+        <template v-if="globalResults && !p2pMode">
           <div class="score" v-for="(score, index) in scores" :key="index">
             {{ score }}
           </div>
         </template>
-        <template v-if="!globalResults">
+        <template v-if="!globalResults && !p2pMode">
           <div class="score" v-for="(score, index) in localScores" :key="index">
+            {{ score }}
+          </div>
+        </template>
+        <template v-if="p2pMode">
+          <div class="score" v-for="(score, index) in p2pScores" :key="index">
             {{ score }}
           </div>
         </template>
@@ -66,9 +101,17 @@
       <h1 v-if="result === 'lose'">You've lost</h1>
       <h1 v-if="result === 'tie'">It's a tie</h1>
       <div class="content">
-        <template v-if="resultRepresentation === null">
+        <template v-if="resultRepresentation === null && !p2pMode">
           <div>Computer chose {{computerChoice}}</div>
           <div>You chose {{yourChoice}}</div>
+        </template>
+        <template v-if="resultRepresentation === null && p2pMode && yourSideIsRight">
+          <div>{{leftPlayerName}} chose {{leftPlayerChoice}}</div>
+          <div>You chose {{rightPlayerChoice}}</div>
+        </template>
+        <template v-if="resultRepresentation === null && p2pMode && !yourSideIsRight">
+          <div>You chose {{leftPlayerChoice}}</div>
+          <div>{{rightPlayerName}} chose {{rightPlayerChoice}}</div>
         </template>
         <template v-if="resultRepresentation !== null">
           <div>{{resultRepresentation.text}}</div>
@@ -96,10 +139,52 @@
       </div>
     </div>
   </Modal>
+  <Modal
+    v-model="isShowStartP2P"
+    :close="cancelP2P"
+  >
+    <div class="modal start-p2p">
+      <h1>Start P2P game</h1>
+      <div class="content">
+        <button @click="createP2P">Create P2P game</button>
+        <div>Or post the invitation link:</div>
+        <input @input="inviteChanged" type="text">
+        <div class="input-check-error" v-if="showStartError==true">Game not found or full.</div>
+      </div>
+    </div>
+  </Modal>
+  <Modal
+    v-model="isShowJoinP2P"
+    :close="cancelP2P"
+  >
+    <div class="modal join-p2p">
+      <h1>Join P2P game</h1>
+      <div class="content">
+        <div>Copy and send this to your friend:</div>
+        <input :value="p2pInviteLink" readonly type="text" @click="copyInviteLinkToClipboard" />
+        <div>Enter your name:</div>
+        <input v-model="yourName" ref="joinP2PNameInput" type="text" pattern="^[a-zA-Z ]{0,20}$">
+      </div>
+      <div class="footer">
+        <button @click="joinP2P">Join</button>
+      </div>
+    </div>
+  </Modal>
 </template>
 
 <script>
 import axios from 'axios';
+
+function hexToB64(str) {
+  return btoa(String.fromCharCode.apply(null, str.match(/\w{2}/g).map(function(a) {
+      return parseInt(a, 16);
+  }))).replace('/','-').replace('+','_');
+}
+function b64ToHex(str) {
+  return atob(str.replace('-','/').replace('_','+')).split('').map(function(c) {
+      return ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join('');
+}
 
 export default {
   name: 'App',
@@ -107,11 +192,18 @@ export default {
   },
   data() {
     return {
-      // backendServer: '/backend/',
-      backendServer: 'http://localhost:80/backend/',
+      backendServer: '/backend/', // prod
+      // backendServer: 'http://localhost:80/backend/', // for easy testing
       // backendServer: 'https://codechallenge.boohma.com/',
       isShowChangeBackendServer: false,
       isShowResult: false,
+      isShowStartP2P: false,
+      showStartError: false,
+      isShowJoinP2P: false,
+      p2pMode: false,
+      p2pID: "",
+      p2pInviteLink: "",
+      yourName: "",
       computerChoice: '',
       yourChoice: '',
       computerChoiceId: 0,
@@ -119,8 +211,16 @@ export default {
       yourChoiceId: 0,
       result: '',
       resultRepresentation: null,
+      leftPlayerName: "",
+      rightPlayerName: "",
+      leftPlayerChoice: "",
+      rightPlayerChoice: "",
+      leftPlayerChoiceID: 0,
+      rightPlayerChoiceID: 0,
+      yourSideIsRight: false,
       scores: [],
       localScores: [],
+      p2pScores: [],
       weapons: [
         { id: 1, name: 'Rock' },
         { id: 2, name: 'Paper' },
@@ -135,6 +235,11 @@ export default {
     this.populateWeapons();
     this.fetchWeapons();
     this.fetchScores();
+
+    window.addEventListener("hashchange", this.hashProcess.bind(this));
+    this.hashProcess();
+    
+    this.yourName = localStorage.getItem("p2p-player-name") || "";
 
     window.addEventListener("resize", function(){
       window?.resize_weapons?.apply?.(this, arguments);
@@ -238,7 +343,143 @@ export default {
       }
       return null;
     },
+    async copyInviteLinkToClipboard() {
+      try {
+        await navigator.clipboard.writeText(window.location.href.split("#")[0] + "#" + this.p2pInviteLink);
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    joinP2P() {
+      if(!this.$refs.joinP2PNameInput.validity.valid) return;
+      this.isShowJoinP2P = false;
+
+      let srv = new String(this.backendServer);
+      if (srv.startsWith('https://')) {
+        srv = srv.replace(/https:\/\//, 'wss://');
+      } else {
+        srv = srv.replace(/http:\/\//, 'ws://');
+      }
+      
+      this.p2pSocket = new WebSocket(srv +
+        'connect_p2p?g=' +
+        encodeURIComponent(this.p2pID) +
+        "&name=" +
+        encodeURIComponent(this.yourName), "p2p");
+      console.log(this.p2pSocket);
+
+      this.bindSocket();
+    },
+    async checkP2PGame() {
+      let id = this.p2pID;
+      try {
+        const response = await axios.get(this.backendServer + 'find_p2p?g=' + encodeURIComponent(id));
+        if(this.p2pID != id) return;
+        if(!response.data.is_full){
+          this.showStartError = false;
+          this.isShowJoinP2P = true;
+          return;
+        }
+      }catch (err) {
+        if(this.p2pID != id) return;
+      }
+      if(!this.isShowStartP2P) this.cancelP2P();
+      else this.showStartError = true;
+    },
+    bindSocket() {
+      if(!this.p2pSocket) return;
+      this.p2pSocket.onopen = this.onSocketOpen.bind(this);
+      this.p2pSocket.onerror = this.onSocketError.bind(this);
+      this.p2pSocket.onclose = this.onSocketClose.bind(this);
+      this.p2pSocket.onmessage = this.onSocketMessage.bind(this);
+    },
+    onSocketOpen(ev) {
+      console.log(ev);
+      this.p2pMode = true;
+      this.p2pScores = [];
+    },
+    onSocketError(ev) {
+      console.log(ev);
+    },
+    onSocketClose() {
+      this.cancelP2P();
+    },
+    onSocketMessage(ev) {
+      let data = JSON.parse(ev.data);
+      console.log(data);
+      this.leftPlayerName = data.state.left_player_name;
+      this.rightPlayerName = data.state.right_player_name;
+      this.yourSideIsRight = data.side != "left";
+      this.leftPlayerChoice = data.state.left_player_choice.name;
+      this.leftPlayerChoiceID = data.state.left_player_choice.id;
+      this.rightPlayerChoice = data.state.right_player_choice.name;
+      this.rightPlayerChoiceID = data.state.right_player_choice.id;
+      if(data.state.result != "unknown") {
+        this.result = data.state.result;
+        this.resultRepresentation = this.getResultRepresentation(this.leftPlayerChoice, this.rightPlayerChoice);
+        this.isShowResult = true;
+        this.p2pScores.unshift(this.result);
+        if(this.p2pScores.length>10) this.p2pScores = this.p2pScores.slice(0, 10);
+      }
+    },
+    unbindSocket() {
+      if(!this.p2pSocket) return;
+      this.p2pSocket.onopen = null;
+      this.p2pSocket.onerror = null;
+      this.p2pSocket.onclose = null;
+      this.p2pSocket.onmessage = null;
+      this.p2pSocket.close();
+      this.p2pSocket = null;
+    },
+    cancelP2P() {
+      this.p2pMode = false;
+      this.isShowStartP2P = false;
+      this.isShowJoinP2P = false;
+      this.showStartError = false;
+      this.p2pID = "";
+      this.p2pInviteLink = "";
+      location.hash = "";
+      this.unbindSocket();
+    },
+    async createP2P() {
+      const response = await axios.post(this.backendServer + 'create_p2p');
+      this.isShowStartP2P = false;
+      this.p2pID = response.data;
+      this.isShowJoinP2P = true;
+      this.p2pInviteLink = hexToB64(this.p2pID).substring(0,11);
+      location.hash = "#" + this.p2pInviteLink;
+    },
+    inviteChanged(ev){
+      let val = ev.target.value;
+      if(val.length == 11) return this.inviteProcess(val);
+      if(val.indexOf("#")>=0) {
+        return this.inviteProcess(val.substring(val.indexOf("#")+1));
+      }
+    },
+    inviteProcess(str) {
+      if(str.length != 11) return false;
+      try{
+        str = b64ToHex(str + "=");
+      }catch(e){
+        return false;
+      }
+      if(str.length != 16) return false;
+
+      this.p2pID = str;
+      this.p2pInviteLink = hexToB64(this.p2pID).substring(0,11);
+
+      this.checkP2PGame();
+      return true
+    },
+    hashProcess(){
+      let h = window.location.hash.substring(1);
+      this.inviteProcess(h);
+    },
     async clearScores() {
+      if(this.p2pMode) {
+        this.p2pScores = [];
+        return;
+      }
       if(!this.globalResults) {
         this.localScores = [];
         return;
@@ -277,6 +518,10 @@ export default {
       }
     },
     async makeChoice(id) {
+      if(this.p2pMode) {
+        this.p2pSocket.send(JSON.stringify({"choice":id}));
+        return;
+      }
       try {
         this.computerChoiceId = 0;
         this.computerChoice = '';
@@ -297,7 +542,6 @@ export default {
       this.computerChoiceId = playerChoice.id;
       this.yourChoiceId = computerChoice.id;
       this.resultRepresentation = this.getResultRepresentation(playerChoice.name, computerChoice.name);
-      console.log(this.resultRepresentation);
       this.isShowResult = true;
       this.localScores.unshift(result);
       if(this.localScores.length>10) this.localScores = this.localScores.slice(0, 10);
@@ -317,6 +561,7 @@ export default {
         axios.defaults.baseURL = this.backendServer;
         await this.fetchWeapons();
         this.isShowChangeBackendServer = false;
+        this.cancelP2P();
       } catch (error) {
         console.error(error);
       }
@@ -359,6 +604,11 @@ input {
   height: 20vw;
   background-size: cover;
 }
+.player .player-you-mark,
+.player .waiting-player {
+  opacity: .4;
+  font-style: italic;
+}
 .backend-server{
   min-width: 32em;
 }
@@ -391,6 +641,22 @@ input {
 .modal input:focus{
   outline:none;
   border-bottom: 2px solid rgba(223, 66, 145, 0.788);
+}
+.modal input:invalid{
+  color:#f88;
+  border-bottom: 2px solid rgba(255, 0, 0, 1);
+}
+.modal .content button {
+  background: rgba(80, 150, 255, 0.1);
+  font-size: 1em;
+  margin: 0;
+  padding: .1em .7em;
+  border: 0 none transparent;
+  cursor: pointer;
+  color: #acaec5;
+}
+.modal .content button:hover {
+  color: #fff;
 }
 .modal .footer{
   display: flex;

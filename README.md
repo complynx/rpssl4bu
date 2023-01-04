@@ -10,6 +10,9 @@ Main focus is on backend, frontend is just for fun.
 This server is for playing game of Rock, Paper, Scissors, Lizard, Spock.
 The server can also use an external supply of random numbers.
 
+Some functions are not covered with tests for speedup purposes, but main
+functionality is tested.
+
 ## Running
 
 First change directory to `./backend`.
@@ -75,6 +78,4 @@ Port 80 is exposed.
 
 ## Optional tasks
 
-1. P2P is partially implemented, wait for full release. No frontend, some backend code missing.
-2. Global result board is only working for this server.
-3. Some design features missing.
+Global result board and P2P are only working for this server.

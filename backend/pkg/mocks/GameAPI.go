@@ -79,6 +79,151 @@ func (_c *GameAPI_Choices_Call) Return() *GameAPI_Choices_Call {
 	return _c
 }
 
+// ClearScores provides a mock function with given fields: w, r
+func (_m *GameAPI) ClearScores(w http.ResponseWriter, r *http.Request) {
+	_m.Called(w, r)
+}
+
+// GameAPI_ClearScores_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ClearScores'
+type GameAPI_ClearScores_Call struct {
+	*mock.Call
+}
+
+// ClearScores is a helper method to define mock.On call
+//   - w http.ResponseWriter
+//   - r *http.Request
+func (_e *GameAPI_Expecter) ClearScores(w interface{}, r interface{}) *GameAPI_ClearScores_Call {
+	return &GameAPI_ClearScores_Call{Call: _e.mock.On("ClearScores", w, r)}
+}
+
+func (_c *GameAPI_ClearScores_Call) Run(run func(w http.ResponseWriter, r *http.Request)) *GameAPI_ClearScores_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(http.ResponseWriter), args[1].(*http.Request))
+	})
+	return _c
+}
+
+func (_c *GameAPI_ClearScores_Call) Return() *GameAPI_ClearScores_Call {
+	_c.Call.Return()
+	return _c
+}
+
+// ConnectP2P provides a mock function with given fields: w, r
+func (_m *GameAPI) ConnectP2P(w http.ResponseWriter, r *http.Request) {
+	_m.Called(w, r)
+}
+
+// GameAPI_ConnectP2P_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ConnectP2P'
+type GameAPI_ConnectP2P_Call struct {
+	*mock.Call
+}
+
+// ConnectP2P is a helper method to define mock.On call
+//   - w http.ResponseWriter
+//   - r *http.Request
+func (_e *GameAPI_Expecter) ConnectP2P(w interface{}, r interface{}) *GameAPI_ConnectP2P_Call {
+	return &GameAPI_ConnectP2P_Call{Call: _e.mock.On("ConnectP2P", w, r)}
+}
+
+func (_c *GameAPI_ConnectP2P_Call) Run(run func(w http.ResponseWriter, r *http.Request)) *GameAPI_ConnectP2P_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(http.ResponseWriter), args[1].(*http.Request))
+	})
+	return _c
+}
+
+func (_c *GameAPI_ConnectP2P_Call) Return() *GameAPI_ConnectP2P_Call {
+	_c.Call.Return()
+	return _c
+}
+
+// CreateP2P provides a mock function with given fields: w, r
+func (_m *GameAPI) CreateP2P(w http.ResponseWriter, r *http.Request) {
+	_m.Called(w, r)
+}
+
+// GameAPI_CreateP2P_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateP2P'
+type GameAPI_CreateP2P_Call struct {
+	*mock.Call
+}
+
+// CreateP2P is a helper method to define mock.On call
+//   - w http.ResponseWriter
+//   - r *http.Request
+func (_e *GameAPI_Expecter) CreateP2P(w interface{}, r interface{}) *GameAPI_CreateP2P_Call {
+	return &GameAPI_CreateP2P_Call{Call: _e.mock.On("CreateP2P", w, r)}
+}
+
+func (_c *GameAPI_CreateP2P_Call) Run(run func(w http.ResponseWriter, r *http.Request)) *GameAPI_CreateP2P_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(http.ResponseWriter), args[1].(*http.Request))
+	})
+	return _c
+}
+
+func (_c *GameAPI_CreateP2P_Call) Return() *GameAPI_CreateP2P_Call {
+	_c.Call.Return()
+	return _c
+}
+
+// FindP2PGame provides a mock function with given fields: w, r
+func (_m *GameAPI) FindP2PGame(w http.ResponseWriter, r *http.Request) {
+	_m.Called(w, r)
+}
+
+// GameAPI_FindP2PGame_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindP2PGame'
+type GameAPI_FindP2PGame_Call struct {
+	*mock.Call
+}
+
+// FindP2PGame is a helper method to define mock.On call
+//   - w http.ResponseWriter
+//   - r *http.Request
+func (_e *GameAPI_Expecter) FindP2PGame(w interface{}, r interface{}) *GameAPI_FindP2PGame_Call {
+	return &GameAPI_FindP2PGame_Call{Call: _e.mock.On("FindP2PGame", w, r)}
+}
+
+func (_c *GameAPI_FindP2PGame_Call) Run(run func(w http.ResponseWriter, r *http.Request)) *GameAPI_FindP2PGame_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(http.ResponseWriter), args[1].(*http.Request))
+	})
+	return _c
+}
+
+func (_c *GameAPI_FindP2PGame_Call) Return() *GameAPI_FindP2PGame_Call {
+	_c.Call.Return()
+	return _c
+}
+
+// GetScores provides a mock function with given fields: w, r
+func (_m *GameAPI) GetScores(w http.ResponseWriter, r *http.Request) {
+	_m.Called(w, r)
+}
+
+// GameAPI_GetScores_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetScores'
+type GameAPI_GetScores_Call struct {
+	*mock.Call
+}
+
+// GetScores is a helper method to define mock.On call
+//   - w http.ResponseWriter
+//   - r *http.Request
+func (_e *GameAPI_Expecter) GetScores(w interface{}, r interface{}) *GameAPI_GetScores_Call {
+	return &GameAPI_GetScores_Call{Call: _e.mock.On("GetScores", w, r)}
+}
+
+func (_c *GameAPI_GetScores_Call) Run(run func(w http.ResponseWriter, r *http.Request)) *GameAPI_GetScores_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(http.ResponseWriter), args[1].(*http.Request))
+	})
+	return _c
+}
+
+func (_c *GameAPI_GetScores_Call) Return() *GameAPI_GetScores_Call {
+	_c.Call.Return()
+	return _c
+}
+
 // Play provides a mock function with given fields: _a0, _a1
 func (_m *GameAPI) Play(_a0 http.ResponseWriter, _a1 *http.Request) {
 	_m.Called(_a0, _a1)

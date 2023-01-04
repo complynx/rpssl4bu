@@ -21,9 +21,10 @@ Optional tasks were done as well:
 ## About
 
 This server is for playing game of Rock, Paper, Scissors, Lizard, Spock.
-The server can also use an external supply of random numbers.
+The server can also use an external supply of random numbers (though this
+might slow down some functions).
 
-Some functions are not covered with tests for speedup purposes, but main
+Some features are not covered with tests for speedup purposes, but main
 functionality is tested.
 
 ## Running

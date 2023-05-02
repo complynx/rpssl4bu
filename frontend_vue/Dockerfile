@@ -1,4 +1,4 @@
-FROM node:alpine as build-stage
+FROM node:lts-alpine as build-stage
 
 ARG FRONTEND_LOCATION
 ARG BACKEND_URL
